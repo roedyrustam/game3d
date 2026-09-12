@@ -483,6 +483,30 @@ class SnakeAndLadderGame {
         this.sparks.material.size = 0.35;
       }
     }
+    
+    // Toggle material emissive states for neon glowing mode
+    this.toggleNeonEmissive(theme === 'neon');
+  }
+
+  toggleNeonEmissive(isNeon) {
+    document.body.classList.toggle('neon-mode', isNeon); // For CSS HUD dark mode
+    this.scene.traverse((child) => {
+      if (child.isMesh && child.material && child.userData.isNeonable) {
+        // Assume material supports emissive (MeshStandardMaterial)
+        if (isNeon) {
+          if (!child.userData.originalEmissive) {
+            child.userData.originalEmissive = child.material.emissive ? child.material.emissive.clone() : new THREE.Color(0x000000);
+          }
+          child.material.emissive = new THREE.Color(child.userData.neonColor || 0x22d3ee);
+          child.material.emissiveIntensity = child.userData.neonIntensity || 0.8;
+        } else {
+          if (child.userData.originalEmissive && child.material.emissive) {
+            child.material.emissive.copy(child.userData.originalEmissive);
+            child.material.emissiveIntensity = 1;
+          }
+        }
+      }
+    });
   }
 
   initActiveTileHalo() {
@@ -878,6 +902,7 @@ class SnakeAndLadderGame {
         railMesh.position.copy(railMid);
         railMesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), railDir.clone().normalize());
         railMesh.castShadow = true;
+        railMesh.userData = { isNeonable: true, neonColor: 0xfacc15, neonIntensity: 0.6 };
         return railMesh;
       };
 
@@ -899,6 +924,7 @@ class SnakeAndLadderGame {
         rungMesh.position.copy(rungMid);
         rungMesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), rungDir.clone().normalize());
         rungMesh.castShadow = true;
+        rungMesh.userData = { isNeonable: true, neonColor: 0xf59e0b, neonIntensity: 0.7 };
         this.laddersGroup.add(rungMesh);
       }
     });
@@ -970,6 +996,7 @@ class SnakeAndLadderGame {
       const tubeGeo = new THREE.TubeGeometry(curve, 36, 0.3, 10, false);
       const tubeMesh = new THREE.Mesh(tubeGeo, snakeBodyMat);
       tubeMesh.castShadow = true;
+      tubeMesh.userData = { isNeonable: true, neonColor: 0x22c55e, neonIntensity: 0.7 };
       this.snakesGroup.add(tubeMesh);
 
       // Snake Head (At Head Tile)
@@ -981,6 +1008,7 @@ class SnakeAndLadderGame {
       headGeo.scale(1, 0.7, 1.4);
       const headMesh = new THREE.Mesh(headGeo, snakeBodyMat);
       headMesh.castShadow = true;
+      headMesh.userData = { isNeonable: true, neonColor: 0x22c55e, neonIntensity: 0.8 };
       headGroup.add(headMesh);
 
       // Two Fierce Eyes
@@ -2456,7 +2484,8 @@ class SnakeAndLadderGame {
       const themes = [
         { id: 'malam', icon: '🌙', name: 'Malam Berbintang' },
         { id: 'siang', icon: '☀️', name: 'Siang Tropis' },
-        { id: 'senja', icon: '🌅', name: 'Senja Keemasan' }
+        { id: 'senja', icon: '🌅', name: 'Senja Keemasan' },
+        { id: 'neon', icon: '✨', name: 'Malam Neon Sakral' }
       ];
       let tIndex = 0;
       btnTheme.addEventListener('click', () => {
