@@ -554,6 +554,28 @@ body {
   transform: scale(1.04);
 }
 
+.btn-dialect-cycle {
+  background: rgba(236, 72, 153, 0.15);
+  border: 1px solid rgba(236, 72, 153, 0.35);
+  color: #f472b6;
+  border-radius: 10px;
+  padding: 6px 10px;
+  font-size: 0.76rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.btn-dialect-cycle:hover {
+  background: rgba(236, 72, 153, 0.3);
+  border-color: #ec4899;
+  transform: scale(1.04);
+}
+
 /* Mode Ekspedisi Pulau */
 .expedition-grid {
   display: grid;
