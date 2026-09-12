@@ -811,6 +811,187 @@ body {
   opacity: 1;
 }
 
+/* ------------------------------------------
+   Turnamen Piala Raja Nusantara (v2.1.0)
+   ------------------------------------------ */
+.tournament-info-banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(234, 88, 12, 0.1));
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  border-radius: 14px;
+  padding: 12px 14px;
+  margin-bottom: 12px;
+}
+
+.tournament-bracket-preview {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.t-matchup-pill {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  transition: all 0.2s ease;
+}
+
+.t-matchup-pill.active-match {
+  border-color: #fbbf24;
+  background: rgba(251, 191, 36, 0.08);
+  box-shadow: 0 0 15px rgba(245, 158, 11, 0.2);
+}
+
+.t-badge-semifinal {
+  font-size: 0.7rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #fbbf24;
+}
+
+.t-matchup-names {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #f8fafc;
+}
+
+.t-player-name {
+  flex: 1;
+}
+
+.t-matchup-names .t-player-name:last-child {
+  text-align: right;
+}
+
+.t-vs {
+  font-size: 0.72rem;
+  color: #f59e0b;
+  font-weight: 900;
+  padding: 2px 8px;
+  background: rgba(245, 158, 11, 0.15);
+  border-radius: 999px;
+  margin: 0 6px;
+}
+
+/* Bracket Modal Layout */
+.bracket-tree {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 12px;
+  align-items: center;
+  margin: 10px 0;
+}
+
+.bracket-column {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.bracket-col-title {
+  font-size: 0.75rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: #94a3b8;
+  margin-bottom: 2px;
+  text-align: center;
+}
+
+.bracket-match {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  padding: 8px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.bracket-match.current-active {
+  border-color: #fbbf24;
+  box-shadow: 0 0 16px rgba(251, 191, 36, 0.35);
+  background: rgba(251, 191, 36, 0.08);
+}
+
+.bracket-slot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 8px;
+  border-radius: 8px;
+  background: rgba(15, 23, 42, 0.5);
+  font-size: 0.82rem;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.bracket-slot.winner {
+  background: rgba(16, 185, 129, 0.15);
+  border: 1px solid rgba(16, 185, 129, 0.4);
+  color: #34d399;
+}
+
+.bracket-slot.loser {
+  opacity: 0.45;
+  text-decoration: line-through;
+}
+
+.bracket-slot-tag {
+  font-size: 0.65rem;
+  font-weight: 800;
+  padding: 2px 6px;
+  border-radius: 6px;
+}
+
+.tag-winner {
+  background: #10b981;
+  color: #064e3b;
+}
+
+.tag-active {
+  background: #f59e0b;
+  color: #451a03;
+  animation: pulseTag 1.2s infinite alternate;
+}
+
+@keyframes pulseTag {
+  from { opacity: 0.7; transform: scale(0.96); }
+  to { opacity: 1; transform: scale(1.04); }
+}
+
+.bracket-connector-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #f59e0b;
+  font-size: 1.4rem;
+  font-weight: 800;
+}
+
+.bracket-trophy-display {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 10px;
+  background: radial-gradient(circle, rgba(251, 191, 36, 0.18) 0%, transparent 70%);
+  border-radius: 16px;
+  text-align: center;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .side-tracker {

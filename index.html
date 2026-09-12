@@ -191,6 +191,37 @@
         </div>
       </div>
 
+      <!-- Turnamen Piala Raja Nusantara Section -->
+      <div id="setup-tournament-section" style="display: none; margin-bottom: 16px;">
+        <div class="modal-section-title" style="margin-top: 10px;">Turnamen Piala Raja Nusantara 🏆</div>
+        <div class="tournament-info-banner">
+          <div style="font-size: 2rem;">👑</div>
+          <div>
+            <div style="font-weight: 800; font-size: 0.95rem; color: #fbbf24;">Sistem Gugur Knockout 4 Pendekar</div>
+            <div style="font-size: 0.78rem; color: #cbd5e1;">Tundukkan Jawara di Semifinal & Rebut Piala Emas di Grand Final!</div>
+          </div>
+        </div>
+
+        <div class="tournament-bracket-preview">
+          <div class="t-matchup-pill active-match">
+            <span class="t-badge-semifinal">Semifinal 1 (Laga Anda)</span>
+            <div class="t-matchup-names">
+              <span class="t-player-name" id="t-preview-p1">Pemain 1</span>
+              <span class="t-vs">VS</span>
+              <span class="t-player-name">Tuanku Imam 🐅 (Minang)</span>
+            </div>
+          </div>
+          <div class="t-matchup-pill">
+            <span class="t-badge-semifinal">Semifinal 2</span>
+            <div class="t-matchup-names">
+              <span class="t-player-name">Gajah Mada ⚔️ (Jawa)</span>
+              <span class="t-vs">VS</span>
+              <span class="t-player-name">I Gusti Ngurah 🌺 (Bali)</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- Online Room Section -->
       <div id="setup-online-section" style="display: none; margin-bottom: 20px;">
         <div style="display: flex; gap: 8px; margin-bottom: 10px;">
@@ -340,8 +371,38 @@
     </div>
   </div>
 
+  <!-- Tournament Bracket Modal (Piala Raja) -->
+  <div class="modal-backdrop" id="modal-tournament-bracket">
+    <div class="modal-dialog" style="max-width: 560px;">
+      <div class="modal-header">
+        <div style="font-size: 2.2rem;">🏆</div>
+        <div>
+          <h2 style="color: #fbbf24;">Bagan Piala Raja Nusantara</h2>
+          <p style="color: var(--text-muted); font-size: 0.85rem;" id="bracket-subtitle">Sistem Gugur 4 Pendekar</p>
+        </div>
+      </div>
+
+      <div class="bracket-tree" id="bracket-tree-container">
+        <!-- Rendered dynamically -->
+      </div>
+
+      <div id="bracket-status-box" style="background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); border-radius: 12px; padding: 12px; margin: 14px 0; font-size: 0.88rem; line-height: 1.4; text-align: center;">
+        <!-- Commentary -->
+      </div>
+
+      <div style="display: flex; gap: 10px;">
+        <button id="btn-bracket-menu" style="flex: 1; background: rgba(255, 255, 255, 0.08); border: 1px solid var(--glass-border); color: #f8fafc; border-radius: 12px; padding: 12px; font-weight: 700; cursor: pointer;">
+          Menu Setup ⚙️
+        </button>
+        <button id="btn-bracket-action" class="btn-primary" style="flex: 2; padding: 12px;">
+          Lanjut Tanding ⚔️
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- Game Logic Script (Three.js ES Module) -->
-  <script type="module" src="game.js?v=2.0.0"></script>
+  <script type="module" src="game.js?v=2.1.0"></script>
 
   <!-- PWA Offline Service Worker -->
   <script>
