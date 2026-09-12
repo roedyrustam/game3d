@@ -1278,6 +1278,7 @@ class SnakeAndLadderGame {
     const baseMesh = new THREE.Mesh(baseGeo, mat);
     baseMesh.position.y = 0.125;
     baseMesh.castShadow = true;
+    baseMesh.userData = { isNeonable: true, neonColor: colorInt, neonIntensity: 0.5 };
     pawnGroup.add(baseMesh);
 
     // Tapered Body
@@ -1285,6 +1286,7 @@ class SnakeAndLadderGame {
     const bodyMesh = new THREE.Mesh(bodyGeo, mat);
     bodyMesh.position.y = 0.6;
     bodyMesh.castShadow = true;
+    bodyMesh.userData = { isNeonable: true, neonColor: colorInt, neonIntensity: 0.7 };
     pawnGroup.add(bodyMesh);
 
     // Decorative Collar
@@ -1292,6 +1294,7 @@ class SnakeAndLadderGame {
     const ringMesh = new THREE.Mesh(ringGeo, mat);
     ringMesh.rotation.x = Math.PI / 2;
     ringMesh.position.y = 1.0;
+    ringMesh.userData = { isNeonable: true, neonColor: colorInt, neonIntensity: 0.8 };
     pawnGroup.add(ringMesh);
 
     // Spherical Crown Head
@@ -1299,6 +1302,7 @@ class SnakeAndLadderGame {
     const headMesh = new THREE.Mesh(headGeo, mat);
     headMesh.position.y = 1.38;
     headMesh.castShadow = true;
+    headMesh.userData = { isNeonable: true, neonColor: colorInt, neonIntensity: 0.8 };
     pawnGroup.add(headMesh);
 
     // Resolve Accessory Type & Motif

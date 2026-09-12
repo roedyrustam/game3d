@@ -1034,3 +1034,24 @@ body {
     font-size: 1rem;
   }
 }
+
+/* --- NEON NIGHT MODE --- */
+body.neon-mode {
+  --bg-dark: #020617;
+  --glass-bg: rgba(2, 6, 23, 0.85);
+  --glass-border: rgba(34, 211, 238, 0.3);
+  --text-main: #cffafe;
+  --primary: #22d3ee;
+}
+body.neon-mode .glass-panel {
+  box-shadow: 0 8px 32px 0 rgba(34, 211, 238, 0.15), inset 0 0 10px rgba(34, 211, 238, 0.1);
+  border: 1px solid var(--glass-border);
+}
+body.neon-mode .icon-btn {
+  color: #22d3ee;
+  text-shadow: 0 0 8px rgba(34, 211, 238, 0.6);
+}
+body.neon-mode .dice-container {
+  box-shadow: 0 0 20px rgba(34, 211, 238, 0.4);
+  border-color: #22d3ee;
+}
