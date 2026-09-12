@@ -1534,6 +1534,10 @@ class SnakeAndLadderGame {
     player.mesh.add(sprite);
     audio.playEmotePop();
 
+    if (this.voiceEnabled && player.dialect) {
+      audio.speakBanter(text, player.dialect);
+    }
+
     this.activeEmotes.push({
       player,
       sprite,
@@ -2549,6 +2553,18 @@ class SnakeAndLadderGame {
         audio.stopBGM();
       }
     });
+
+    const btnVoice = document.getElementById('btn-voice');
+    if (btnVoice) {
+      btnVoice.addEventListener('click', () => {
+        this.voiceEnabled = !this.voiceEnabled;
+        btnVoice.classList.toggle('active', this.voiceEnabled);
+        if (!this.voiceEnabled && window.speechSynthesis) {
+          window.speechSynthesis.cancel();
+        }
+        this.showToast(this.voiceEnabled ? "Suara Karakter Aktif 🗣️" : "Suara Karakter Mati 🔇");
+      });
+    }
 
     // Camera Mode & Preset Cycler
     const btnCamera = document.getElementById('btn-camera');

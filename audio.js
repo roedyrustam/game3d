@@ -359,6 +359,44 @@ export class AudioSynthesizer {
       noise.start();
     } catch(e) {}
   }
+
+  // ------------------------------------------
+  // TTS (Text-to-Speech) Web Speech API
+  // ------------------------------------------
+  speakBanter(text, dialectId) {
+    // Only proceed if AudioSynthesizer is enabled and TTS is supported
+    if (!this.enabled || !window.speechSynthesis) return;
+
+    window.speechSynthesis.cancel();
+    
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = 'id-ID';
+
+    if (dialectId === 'jawa') {
+      utterance.pitch = 0.8;
+      utterance.rate = 0.9;
+    } else if (dialectId === 'sunda') {
+      utterance.pitch = 1.2;
+      utterance.rate = 1.1;
+    } else if (dialectId === 'batak') {
+      utterance.pitch = 0.7;
+      utterance.rate = 1.2;
+    } else if (dialectId === 'minang') {
+      utterance.pitch = 1.1;
+      utterance.rate = 1.0;
+    } else if (dialectId === 'bugis') {
+      utterance.pitch = 1.0;
+      utterance.rate = 1.1;
+    } else if (dialectId === 'betawi') {
+      utterance.pitch = 1.3;
+      utterance.rate = 1.2;
+    } else {
+      utterance.pitch = 1.0;
+      utterance.rate = 1.0;
+    }
+
+    window.speechSynthesis.speak(utterance);
+  }
 }
 
 export const audio = new AudioSynthesizer();
