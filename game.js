@@ -2539,13 +2539,35 @@ class SnakeAndLadderGame {
 
         player.mesh.position.x = THREE.MathUtils.lerp(startPos.x, endPos.x, p);
         player.mesh.position.z = THREE.MathUtils.lerp(startPos.z, endPos.z, p);
+        
         // Parabolic Hop Arc
-        player.mesh.position.y = startPos.y + Math.sin(p * Math.PI) * 1.5;
+        const yArc = Math.sin(p * Math.PI);
+        player.mesh.position.y = startPos.y + yArc * 1.5;
+        
+        // Spin rotation
+        player.mesh.rotation.y = (p * Math.PI * 2);
+
+        // Squash and stretch animation
+        if (p < 0.2) {
+            player.mesh.scale.set(1.2, 0.8, 1.2); // Takeoff squash
+        } else if (p < 0.8) {
+            const stretchY = 1.0 + yArc * 0.4;
+            const squashXZ = 1.0 - yArc * 0.2;
+            player.mesh.scale.set(squashXZ, stretchY, squashXZ); // Mid-air stretch
+        } else {
+            const landingP = (p - 0.8) / 0.2;
+            const squashY = 0.8 + (landingP * 0.2);
+            const stretchXZ = 1.2 - (landingP * 0.2);
+            player.mesh.scale.set(stretchXZ, squashY, stretchXZ); // Landing squash
+        }
 
         if (p < 1) {
           requestAnimationFrame(hopStep);
         } else {
           player.mesh.position.copy(endPos);
+          player.mesh.scale.set(1, 1, 1);
+          player.mesh.rotation.y = 0;
+          this.createLandingSparks(endPos, player.colorInt || 0xffffff);
           resolve();
         }
       };
@@ -2649,10 +2671,16 @@ class SnakeAndLadderGame {
         const p = Math.min(1, elapsed / duration);
         mesh.position.lerpVectors(startPos, endPos, p);
         mesh.position.y += Math.sin(p * Math.PI) * archHeight;
+        
+        // Wobble left and right while climbing
+        mesh.rotation.z = Math.sin(p * Math.PI * 6) * 0.15;
+        mesh.rotation.x = Math.cos(p * Math.PI * 6) * 0.15;
+        
         if (p < 1) {
           requestAnimationFrame(travel);
         } else {
           mesh.position.copy(endPos);
+          mesh.rotation.set(0, 0, 0);
           resolve();
         }
       };
@@ -2669,9 +2697,16 @@ class SnakeAndLadderGame {
         const point = curve.getPointAt(p);
         mesh.position.copy(point);
         mesh.position.y += 0.35; // Hover over snake spine
+        
+        // Spin wildly while sliding down
+        mesh.rotation.y = p * Math.PI * 10;
+        mesh.rotation.z = Math.sin(p * Math.PI * 8) * 0.2;
+
         if (p < 1) {
           requestAnimationFrame(slide);
         } else {
+          mesh.rotation.y = 0;
+          mesh.rotation.z = 0;
           resolve();
         }
       };
@@ -3499,11 +3534,96 @@ class SnakeAndLadderGame {
     }, 2400);
   }
 
+  createLandingSparks(position, color) {
+    const sparkCount = 8;
+    const geometry = new THREE.BufferGeometry();
+    const positions = new Float32Array(sparkCount * 3);
+    const velocities = [];
+
+    for (let i = 0; i < sparkCount; i++) {
+      positions[i * 3] = position.x;
+      positions[i * 3 + 1] = position.y + 0.1;
+      positions[i * 3 + 2] = position.z;
+      
+      const angle = (Math.PI * 2 / sparkCount) * i;
+      const speed = 0.05 + Math.random() * 0.05;
+      velocities.push(new THREE.Vector3(
+        Math.cos(angle) * speed,
+        Math.random() * 0.1,
+        Math.sin(angle) * speed
+      ));
+    }
+
+    geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    const material = new THREE.PointsMaterial({
+      color: color,
+      size: 0.25,
+      transparent: true,
+      opacity: 1.0,
+      blending: THREE.AdditiveBlending
+    });
+
+    const points = new THREE.Points(geometry, material);
+    this.scene.add(points);
+
+    if (!this.activeSparks) this.activeSparks = [];
+    this.activeSparks.push({
+      mesh: points,
+      velocities: velocities,
+      age: 0,
+      maxAge: 20
+    });
+  }
+
   // ------------------------------------------
   // Main Animation Loop
   // ------------------------------------------
   animate() {
     requestAnimationFrame(() => this.animate());
+
+    // Update Landing Sparks
+    if (this.activeSparks) {
+      for (let i = this.activeSparks.length - 1; i >= 0; i--) {
+        const spark = this.activeSparks[i];
+        const positions = spark.mesh.geometry.attributes.position.array;
+        
+        for (let j = 0; j < spark.velocities.length; j++) {
+          positions[j * 3] += spark.velocities[j].x;
+          positions[j * 3 + 1] += spark.velocities[j].y;
+          positions[j * 3 + 2] += spark.velocities[j].z;
+          spark.velocities[j].y -= 0.005; // Gravity
+        }
+        
+        spark.mesh.geometry.attributes.position.needsUpdate = true;
+        spark.mesh.material.opacity = 1.0 - (spark.age / spark.maxAge);
+        spark.age++;
+        
+        if (spark.age >= spark.maxAge) {
+          this.scene.remove(spark.mesh);
+          spark.mesh.geometry.dispose();
+          spark.mesh.material.dispose();
+          this.activeSparks.splice(i, 1);
+        }
+      }
+    }
+
+    // Idle Animation for pawns
+    if (!this.isMoving && !this.isRolling && this.players.length > 0) {
+      const time = Date.now() * 0.003;
+      
+      this.players.forEach((p, idx) => {
+        if (!p.mesh) return;
+        if (idx === this.currentTurn) {
+          // Active pawn breathes/bobs
+          p.mesh.scale.y = 1.0 + Math.sin(time * 2) * 0.04;
+          p.mesh.scale.x = 1.0 - Math.sin(time * 2) * 0.02;
+          p.mesh.scale.z = 1.0 - Math.sin(time * 2) * 0.02;
+        } else {
+          // Reset others
+          p.mesh.scale.set(1, 1, 1);
+        }
+      });
+    }
 
     // Update Confetti
     for (let i = this.confettiParticles.length - 1; i >= 0; i--) {
