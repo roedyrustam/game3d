@@ -214,3 +214,12 @@ export const EXPEDITIONS = [
     badge: '🗺️ Penakluk Nusantara'
   }
 ];
+
+export const TOURNAMENT_BOTS = [
+  { name: 'Tuanku Imam 🐅', accessory: 'tanjak', motif: 'songket' },
+  { name: 'Gajah Mada ⚔️', accessory: 'mahkota', motif: 'kawung' },
+  { name: 'Cut Nyak Dien 🦅', accessory: 'peci', motif: 'tenun' },
+  { name: 'Pattimura 🗡️', accessory: 'udeng', motif: 'polos' },
+  { name: 'Diponegoro 🐎', accessory: 'peci', motif: 'megamendung' },
+  { name: 'I Gusti Ngurah 🌺', accessory: 'udeng', motif: 'songket' }
+];

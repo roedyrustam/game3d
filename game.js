@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { OrbitControls } from './lib/OrbitControls.js';
 
-import { BOARD_SIZE, TILE_SIZE, BOARD_WIDTH, BOARD_OFFSET, BOARD_SURFACE_Y, SNAKES, LADDERS, MYSTERY_TILES, CULTURE_TILES, TRIVIA_QUESTIONS, PLAYER_COLORS, HEADGEARS, SOUNDPACKS, BATIK_MOTIFS, NUSANTARA_DIALECTS, DIALECT_BANTER, EXPEDITIONS } from './constants.js';
+import { BOARD_SIZE, TILE_SIZE, BOARD_WIDTH, BOARD_OFFSET, BOARD_SURFACE_Y, SNAKES, LADDERS, MYSTERY_TILES, CULTURE_TILES, TRIVIA_QUESTIONS, PLAYER_COLORS, HEADGEARS, SOUNDPACKS, BATIK_MOTIFS, NUSANTARA_DIALECTS, DIALECT_BANTER, EXPEDITIONS, TOURNAMENT_BOTS } from './constants.js';
 import { audio } from './audio.js';
 // ==========================================
 // 3D GAME STATE & APP ENGINE
@@ -22,7 +22,8 @@ class SnakeAndLadderGame {
     this.playerMotifs = ['megamendung', 'kawung', 'songket', 'tenun'];
     this.playerDialects = ['jawa', 'sunda', 'minang', 'betawi'];
     this.voiceEnabled = true;
-    this.currentExpedition = 'jawa';
+    this.expeditionLevel = parseInt(localStorage.getItem('expeditionLevel') || '0');
+    this.currentExpedition = EXPEDITIONS[this.expeditionLevel]?.id || 'jawa';
     this.isExpeditionMode = false;
 
     // Turnamen Mini Knockout Bracket (Piala Raja Nusantara)
@@ -2197,10 +2198,10 @@ class SnakeAndLadderGame {
         if (!winner.isAI) {
           this.tournamentBracket.sf1.winner = winner.name;
           this.tournamentBracket.sf1.status = 'done';
-          this.tournamentBracket.sf2.winner = 'Gajah Mada ⚔️';
+          this.tournamentBracket.sf2.winner = this.tourBots[1].name;
           this.tournamentBracket.sf2.status = 'done';
           this.tournamentBracket.final.p1 = winner.name;
-          this.tournamentBracket.final.p2 = 'Gajah Mada ⚔️';
+          this.tournamentBracket.final.p2 = this.tourBots[1].name;
           this.tournamentBracket.final.status = 'ready';
           this.showToast(`🏆 Kemenangan Semifinal! Bersiap untuk Grand Final!`);
           setTimeout(() => {
@@ -2210,10 +2211,10 @@ class SnakeAndLadderGame {
         } else {
           this.tournamentBracket.sf1.winner = winner.name;
           this.tournamentBracket.sf1.status = 'done';
-          this.tournamentBracket.sf2.winner = 'Gajah Mada ⚔️';
+          this.tournamentBracket.sf2.winner = this.tourBots[1].name;
           this.tournamentBracket.sf2.status = 'done';
           this.tournamentBracket.final.p1 = winner.name;
-          this.tournamentBracket.final.p2 = 'Gajah Mada ⚔️';
+          this.tournamentBracket.final.p2 = this.tourBots[1].name;
           this.showToast(`Gugur di Semifinal... Coba lagi!`);
           setTimeout(() => {
             this.showTournamentBracketModal('sf_lost');
@@ -2227,6 +2228,8 @@ class SnakeAndLadderGame {
           this.tournamentBracket.final.status = 'champion';
           audio.playRoyalFanfare();
           this.showToast(`👑 SANG JUARA PIALA RAJA NUSANTARA! 🏆`);
+          // Grand Fireworks
+          for(let i=1; i<=4; i++) setTimeout(() => this.spawnConfetti(), i * 600);
           setTimeout(() => {
             this.showTournamentBracketModal('final_win');
           }, 1800);
@@ -2246,7 +2249,34 @@ class SnakeAndLadderGame {
     const winnerAnnounceEl = document.getElementById('winner-announcement');
     if (this.isExpeditionMode && !winner.isAI) {
       const exp = EXPEDITIONS.find(e => e.id === this.currentExpedition) || EXPEDITIONS[0];
-      winnerAnnounceEl.innerHTML = `🎉 <b>${winner.name}</b> Berhasil Menaklukkan Tahap Ekspedisi <b>${exp.name}</b>! ${exp.icon}`;
+      const expIndex = EXPEDITIONS.findIndex(e => e.id === this.currentExpedition);
+      
+      if (expIndex >= this.expeditionLevel) {
+        this.expeditionLevel = Math.min(EXPEDITIONS.length - 1, expIndex + 1);
+        localStorage.setItem('expeditionLevel', this.expeditionLevel);
+      }
+      
+      const nextExp = EXPEDITIONS[this.expeditionLevel];
+      
+      if (expIndex === EXPEDITIONS.length - 1) {
+        winnerAnnounceEl.innerHTML = `🎉 <b>${winner.name}</b> Berhasil Menaklukkan Seluruh Nusantara! 🗺️`;
+        this.showToast(`Lencana "Penakluk Nusantara" Terbuka!`);
+        this.recordStat('tournamentsWon', 1); // as placeholder for badge
+      } else {
+        winnerAnnounceEl.innerHTML = `🎉 <b>${winner.name}</b> Menaklukkan <b>${exp.name}</b>! ${exp.icon}<br><br>
+        <button id="btn-next-expedition" class="action-btn" style="margin-top:15px; font-size:1.1rem; padding: 12px 24px;">Lanjutkan ke ${nextExp.name} ${nextExp.icon}</button>`;
+        setTimeout(() => {
+          document.getElementById('btn-next-expedition')?.addEventListener('click', () => {
+             this.currentExpedition = nextExp.id;
+             document.getElementById('modal-winner').classList.remove('open');
+             this.setupPlayers([
+               { name: winner.name, isAI: false, accessory: winner.accessory, motif: winner.motif },
+               { name: 'Penjaga ' + nextExp.name, isAI: true, accessory: 'caping', motif: 'polos' }
+             ]);
+             this.isExpeditionMode = true;
+          });
+        }, 100);
+      }
       this.showToast(`Tahap Ekspedisi ${exp.name} Selesai!`);
     } else {
       winnerAnnounceEl.innerText = `${winner.name} keluar sebagai Juara Ular Tangga 3D!`;
@@ -2336,7 +2366,22 @@ class SnakeAndLadderGame {
     // Expedition Stage Cards Click Handler
     const expCards = document.querySelectorAll('.expedition-card');
     expCards.forEach(card => {
+      const stageId = card.dataset.stage;
+      const expIndex = EXPEDITIONS.findIndex(e => e.id === stageId);
+      
+      if (expIndex > this.expeditionLevel) {
+        card.style.opacity = '0.5';
+        card.style.cursor = 'not-allowed';
+        card.title = 'Terkunci! Selesaikan ekspedisi sebelumnya.';
+      } else {
+        card.title = 'Terbuka';
+      }
+
       card.addEventListener('click', () => {
+        if (expIndex > this.expeditionLevel) {
+          this.showToast(`🔒 Ekspedisi Terkunci! Selesaikan level sebelumnya.`);
+          return;
+        }
         expCards.forEach(c => c.classList.remove('active'));
         card.classList.add('active');
         this.currentExpedition = card.dataset.stage;
@@ -2516,6 +2561,46 @@ class SnakeAndLadderGame {
       document.getElementById('modal-setup').classList.add('open');
     });
 
+    // Settings Modal
+    document.getElementById('btn-open-settings')?.addEventListener('click', () => {
+      document.getElementById('modal-settings').classList.add('open');
+    });
+    document.getElementById('btn-close-settings')?.addEventListener('click', () => {
+      document.getElementById('modal-settings').classList.remove('open');
+    });
+    document.getElementById('btn-reset-expedition')?.addEventListener('click', () => {
+      if (confirm('Yakin ingin mereset progres Ekspedisi kembali ke Tanah Jawa?')) {
+        this.expeditionLevel = 0;
+        localStorage.setItem('expeditionLevel', 0);
+        this.currentExpedition = 'jawa';
+        this.showToast('Progres Ekspedisi berhasil direset.');
+        document.getElementById('modal-settings').classList.remove('open');
+        // Refresh UI if on expedition tab
+        const expCards = document.querySelectorAll('.expedition-card');
+        expCards.forEach(card => {
+          const stageId = card.dataset.stage;
+          const expIndex = EXPEDITIONS.findIndex(e => e.id === stageId);
+          if (expIndex > this.expeditionLevel) {
+            card.style.opacity = '0.5';
+            card.style.cursor = 'not-allowed';
+            card.title = 'Terkunci! Selesaikan ekspedisi sebelumnya.';
+          } else {
+            card.style.opacity = '1';
+            card.style.cursor = 'pointer';
+            card.title = 'Terbuka';
+          }
+          if (stageId === 'jawa') card.classList.add('active');
+          else card.classList.remove('active');
+        });
+      }
+    });
+    document.getElementById('btn-clear-all-data')?.addEventListener('click', () => {
+      if (confirm('BAHAYA! Semua data, statistik, dan pencapaian akan dihapus. Lanjutkan?')) {
+        localStorage.clear();
+        location.reload();
+      }
+    });
+
     // Rules Modal
     document.getElementById('btn-rules').addEventListener('click', () => {
       document.getElementById('modal-rules').classList.add('open');
@@ -2667,9 +2752,13 @@ class SnakeAndLadderGame {
     this.isExpeditionMode = false;
     this.tournamentRound = 'semifinal';
     this.tournamentPlayer = { name: p1Name, accessory: p1Acc, motif: p1Motif };
+    
+    const shuffledBots = [...TOURNAMENT_BOTS].sort(() => 0.5 - Math.random());
+    this.tourBots = [shuffledBots[0], shuffledBots[1], shuffledBots[2]];
+
     this.tournamentBracket = {
-      sf1: { p1: p1Name, p2: 'Tuanku Imam 🐅', winner: null, status: 'active' },
-      sf2: { p1: 'Gajah Mada ⚔️', p2: 'I Gusti Ngurah 🌺', winner: null, status: 'waiting' },
+      sf1: { p1: p1Name, p2: this.tourBots[0].name, winner: null, status: 'active' },
+      sf2: { p1: this.tourBots[1].name, p2: this.tourBots[2].name, winner: null, status: 'waiting' },
       final: { p1: 'Pemenang SF1', p2: 'Pemenang SF2', winner: null, status: 'waiting' }
     };
     this.startTournamentMatch('semifinal');
@@ -2692,11 +2781,11 @@ class SnakeAndLadderGame {
 
       const configs = [
         { name: this.tournamentPlayer.name, isAI: false, accessory: this.tournamentPlayer.accessory, motif: this.tournamentPlayer.motif },
-        { name: 'Tuanku Imam 🐅', isAI: true, accessory: 'tanjak', motif: 'songket' }
+        { name: this.tourBots[0].name, isAI: true, accessory: this.tourBots[0].accessory, motif: this.tourBots[0].motif }
       ];
       this.setupPlayers(configs);
-      this.showToast('🏆 Semifinal Piala Raja: Hadapi Tuanku Imam dari Ranah Minang!');
-      this.addHistoryLog('⚔️ <strong>Babak Semifinal Piala Raja Dimulai!</strong>');
+      this.showToast(`🏆 Semifinal Piala Raja: Hadapi ${this.tourBots[0].name}!`);
+      this.addHistoryLog(`⚔️ <strong>Babak Semifinal Piala Raja Dimulai!</strong>`);
     } else if (round === 'final') {
       this.setBoardTheme('candi');
       this.setWeather('daun');
@@ -2705,11 +2794,11 @@ class SnakeAndLadderGame {
 
       const configs = [
         { name: this.tournamentPlayer.name, isAI: false, accessory: this.tournamentPlayer.accessory, motif: this.tournamentPlayer.motif },
-        { name: 'Gajah Mada ⚔️', isAI: true, accessory: 'mahkota', motif: 'kawung' }
+        { name: this.tournamentBracket.sf2.winner, isAI: true, accessory: this.tourBots[1].accessory, motif: this.tourBots[1].motif }
       ];
       this.setupPlayers(configs);
-      this.showToast('👑 GRAND FINAL PIALA RAJA: Hadapi Sang Patih Gajah Mada!');
-      this.addHistoryLog('👑 <strong>PARTAI PUNCAK GRAND FINAL PIALA RAJA DIMULAI!</strong>');
+      this.showToast(`👑 GRAND FINAL PIALA RAJA: Hadapi ${this.tournamentBracket.sf2.winner}!`);
+      this.addHistoryLog(`👑 <strong>PARTAI PUNCAK GRAND FINAL PIALA RAJA DIMULAI!</strong>`);
     }
   }
 

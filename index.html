@@ -130,12 +130,15 @@
   <!-- Setup Game Modal -->
   <div class="modal-backdrop open" id="modal-setup">
     <div class="modal-dialog">
-      <div class="modal-header">
-        <img src="assets/logo.jpg" alt="Logo">
-        <div>
-          <h2>Ular Tangga 3D</h2>
-          <p style="color: var(--text-muted); font-size: 0.85rem;">Pilih Mode & Jumlah Pemain</p>
+      <div class="modal-header" style="display: flex; align-items: center; justify-content: space-between; gap: 15px;">
+        <div style="display: flex; align-items: center; gap: 15px;">
+          <img src="assets/logo.jpg" alt="Logo">
+          <div>
+            <h2>Ular Tangga 3D</h2>
+            <p style="color: var(--text-muted); font-size: 0.85rem;">Pilih Mode & Jumlah Pemain</p>
+          </div>
         </div>
+        <button id="btn-open-settings" class="icon-btn" title="Pengaturan Game" style="background: rgba(255,255,255,0.1); font-size: 1.2rem; flex-shrink: 0;">⚙️</button>
       </div>
 
       <div class="modal-section-title">Mode Permainan</div>
@@ -401,6 +404,32 @@
           Lanjut Tanding ⚔️
         </button>
       </div>
+    </div>
+  </div>
+
+  <!-- Settings Modal -->
+  <div class="modal-backdrop" id="modal-settings">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <div style="font-size: 2rem;">⚙️</div>
+        <div>
+          <h2>Pengaturan Game</h2>
+          <p style="color: var(--text-muted); font-size: 0.85rem;">Manajemen Data & Opsi</p>
+        </div>
+      </div>
+      <div class="modal-body" style="padding: 15px 0;">
+        <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); margin-bottom: 15px;">
+          <h3 style="margin: 0 0 10px 0; font-size: 1.1rem;">Reset Progres Ekspedisi</h3>
+          <p style="font-size: 0.9rem; color: #a1a1aa; margin-bottom: 15px;">Mengulang kembali Ekspedisi Pulau Nusantara dari awal (Tanah Jawa). Riwayat dan skor mungkin akan dihapus.</p>
+          <button id="btn-reset-expedition" class="action-btn" style="background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);">⚠️ Reset Progres Ekspedisi</button>
+        </div>
+        <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1);">
+          <h3 style="margin: 0 0 10px 0; font-size: 1.1rem;">Hapus Semua Data</h3>
+          <p style="font-size: 0.9rem; color: #a1a1aa; margin-bottom: 15px;">Menghapus semua data statistik, turnamen, dan profil dari perangkat ini (Clear localStorage).</p>
+          <button id="btn-clear-all-data" class="action-btn" style="background: linear-gradient(135deg, #1f2937 0%, #111827 100%); color: #ef4444; border: 1px solid #ef4444;">🚨 Hapus Semua Data</button>
+        </div>
+      </div>
+      <button id="btn-close-settings" class="action-btn" style="margin-top: 10px;">Kembali</button>
     </div>
   </div>
 
