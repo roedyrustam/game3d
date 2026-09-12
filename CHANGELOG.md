@@ -1,6 +1,14 @@
 # Changelog
 All notable changes to the "Ular Tangga 3D Nusantara" project are documented in this file.
 
+## [2.2.0] - 2026-09-12 (Production Ready - Mabar & Fitur Sosial 🌐)
+### Added
+- **Multiplayer Online Real-Time (Supabase)**: Migrasi dari SSE ke arsitektur Supabase Channels. Mendukung pembuatan *room*, *join room* dengan kode 6 karakter, sinkronisasi dadu, pergerakan, dan notifikasi pemain.
+- **Voice Synthesizer (TTS) Multi-Dialek**: Menggunakan Web Speech API untuk membacakan balon obrolan dengan nada (pitch) dan kecepatan (rate) unik untuk tiap dialek nusantara (Jawa, Sunda, Minang, Betawi, dll).
+- **Mode Malam Sakral Berpendar (Neon Mode)**: Skema pencahayaan khusus di mana langit menjadi gelap dan bidak pion, ular, serta tangga memancarkan cahaya neon yang indah (Emissive Glow).
+- **Mini-Game Catur Jawa**: Jika pemain mendarat di petak 45, mereka ditantang bermain mini-game Catur Jawa melawan AI Bot lewat antarmuka modal. Menang maju +3, Kalah mundur -3 petak.
+- **Vercel Deployment Ready**: Arsitektur front-end disederhanakan dan dibersihkan sehingga 100% siap di-deploy secara instan via Vercel.
+
 ## [2.1.0] - 2026-09-12 (Turnamen Piala Raja Nusantara 🏆)
 ### Added
 - **Mode Turnamen Mini Knockout Bracket (Piala Raja Nusantara 🏆)**:

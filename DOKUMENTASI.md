@@ -22,3 +22,14 @@ Sesuai arahan, game ini tidak bergantung pada file model 3D eksternal (`.gltf`, 
 
 5. **Pion Karakter**:
    - Model bidak catur/piala klasik (`CylinderGeometry` + `SphereGeometry` + `TorusGeometry`) dengan warna pemain (Merah, Biru, Hijau, Kuning).
+
+## Panduan Deployment (Vercel)
+1. Buat repository baru di **GitHub** dan push seluruh kode sumber ini.
+2. Buka dashboard **Vercel** (vercel.com) dan buat Project baru.
+3. Import repository GitHub Anda.
+4. Biarkan pengaturan *Framework Preset* menjadi \Other\ (karena ini pure HTML/JS statis).
+5. Tidak ada *Build Command* yang diperlukan.
+6. Tambahkan **Environment Variables** di Vercel jika Anda menggunakan backend eksternal (Supabase, dsb), meskipun saat ini dikonfigurasi melalui \config.js\.
+7. Klik **Deploy**! Game Ular Tangga 3D akan live dalam hitungan detik.
+
+File \ercel.json\ juga telah disiapkan secara bawaan untuk merutekan semua HTTP Header standar untuk aplikasi statis ini.
