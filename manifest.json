@@ -1,0 +1,18 @@
+{
+  "name": "Ular Tangga 3D Nusantara",
+  "short_name": "UlarTangga3D",
+  "description": "Permainan papan klasik Ular Tangga Indonesia dalam grafis 3D prosedural modern.",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#0f172a",
+  "theme_color": "#f59e0b",
+  "icons": [
+    {
+      "src": "assets/logo.jpg",
+      "sizes": "192x192 512x512",
+      "type": "image/jpeg",
+      "purpose": "any maskable"
+    }
+  ]
+}

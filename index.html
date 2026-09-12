@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Ular Tangga 3D Nusantara — Game Papan Klasik Indonesia</title>
+  <meta name="description" content="Nostalgia game papan Ular Tangga klasik Indonesia dalam visual 3D procedural penuh warna dengan fisika dadu dan kecerdasan AI.">
+  <link rel="icon" type="image/jpeg" href="assets/logo.jpg">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#f59e0b">
+  <link rel="stylesheet" href="style.css">
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "./lib/three.module.js",
+      "three/addons/": "./lib/"
+    }
+  }
+  </script>
+</head>
+<body>
+  <!-- 3D Canvas WebGL Container -->
+  <div id="canvas-container"></div>
+
+  <!-- HUD Glassmorphic Overlay -->
+  <div class="ui-overlay">
+    <!-- Top Bar -->
+    <header class="top-bar">
+      <div class="brand-badge interactive">
+        <img src="assets/logo.jpg" alt="Logo Ular Tangga 3D" class="brand-logo">
+        <div>
+          <h1 class="brand-title">ULAR TANGGA 3D</h1>
+          <p class="brand-sub">Nusantara Classic Edition</p>
+        </div>
+      </div>
+
+      <div class="header-controls interactive">
+        <button id="btn-theme" class="icon-btn" title="Suasana Langit 3D (Malam / Siang / Senja)" aria-label="Suasana">
+          🌙
+        </button>
+        <button id="btn-weather" class="icon-btn" title="Efek Cuaca Dinamis 3D (Cerah / Hujan / Daun / Kabut)" aria-label="Cuaca">
+          🌧️
+        </button>
+        <button id="btn-board-theme" class="icon-btn" title="Gaya Papan 3D (Klasik / Candi / Rimba)" aria-label="Gaya Papan">
+          📜
+        </button>
+        <button id="btn-speed" class="icon-btn" title="Kecepatan Gerak Pion (1x / 2x)" aria-label="Kecepatan" style="font-size: 0.8rem; font-weight: 800;">
+          ⚡1x
+        </button>
+        <button id="btn-camera" class="icon-btn active" title="Ganti Mode Kamera (Sinematik / Bebas)" aria-label="Kamera">
+          🎥
+        </button>
+        <button id="btn-sound" class="icon-btn active" title="Nyalakan/Matikan Suara" aria-label="Suara">
+          🔊
+        </button>
+        <button id="btn-soundpack" class="icon-btn" title="Pilih Soundpack Audio: Gamelan / Sunda / 8-Bit" aria-label="Soundpack">
+          🎶
+        </button>
+        <button id="btn-stats" class="icon-btn" title="Statistik & Rekor Pemain" aria-label="Statistik">
+          🏆
+        </button>
+        <button id="btn-rules" class="icon-btn" title="Aturan & Panduan Bermain" aria-label="Bantuan">
+          ❓
+        </button>
+        <button id="btn-restart" class="icon-btn" title="Ulang Permainan / Pengaturan Pemain" aria-label="Restart">
+          ⚙️
+        </button>
+      </div>
+    </header>
+
+    <!-- Side Leaderboard -->
+    <aside class="side-tracker interactive" id="scoreboard-panel">
+      <div class="tracker-title">
+        <span>Posisi Pemain</span>
+        <span>Petak</span>
+      </div>
+      <div id="player-list-tracker">
+        <!-- Generated dynamically in JS -->
+      </div>
+
+      <div class="tracker-title" style="margin-top: 12px; border-top: 1px solid var(--glass-border); padding-top: 10px;">
+        <span>Riwayat Langkah</span>
+        <span>Aksi</span>
+      </div>
+      <div id="game-history-log" style="display: flex; flex-direction: column; gap: 6px; max-height: 140px; overflow-y: auto; font-size: 0.75rem; color: var(--text-muted);">
+        <div style="font-style: italic; opacity: 0.6;">Belum ada langkah</div>
+      </div>
+    </aside>
+
+    <!-- Center Event Toast Notification -->
+    <div id="event-toast" class="event-toast">
+      Pion melangkah!
+    </div>
+
+    <!-- Bottom Controls & Turn Bar -->
+    <footer class="bottom-panel">
+      <!-- Quick Emote Reaction Bar -->
+      <div class="emote-bar interactive" id="emote-bar">
+        <span class="emote-title">💬 Reaksi:</span>
+        <button class="btn-emote" data-text="Gas Terus! 🔥" title="Gas Terus!">🔥</button>
+        <button class="btn-emote" data-text="Mantap Jiwa! 🎉" title="Mantap Jiwa!">🎉</button>
+        <button class="btn-emote" data-text="Waduh Bahaya! 😱" title="Waduh Bahaya!">😱</button>
+        <button class="btn-emote" data-text="Wkwkwk! 😂" title="Wkwkwk!">😂</button>
+        <button class="btn-emote" data-text="Salam Santun 🙏" title="Salam Santun">🙏</button>
+        <button class="btn-emote" data-text="Hoki Dadu! 🎲" title="Hoki Dadu!">🎲</button>
+      </div>
+
+      <div class="turn-card interactive" id="turn-card">
+        <div class="turn-dot" id="turn-indicator-dot"></div>
+        <span class="turn-text">Giliran: <span class="turn-player-highlight" id="current-player-name">Pemain 1</span></span>
+      </div>
+
+      <div class="action-cluster interactive">
+        <button id="btn-roll" class="roll-btn" aria-label="Kocok Dadu">
+          <span style="font-size: 1.4rem;">🎲</span>
+          <span>KOCOK DADU</span>
+        </button>
+
+        <div class="dice-result-pill" id="dice-pill">
+          <span>Angka:</span>
+          <span class="dice-val-num" id="dice-value-display">-</span>
+        </div>
+      </div>
+    </footer>
+  </div>
+
+  <!-- Setup Game Modal -->
+  <div class="modal-backdrop open" id="modal-setup">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <img src="assets/logo.jpg" alt="Logo">
+        <div>
+          <h2>Ular Tangga 3D</h2>
+          <p style="color: var(--text-muted); font-size: 0.85rem;">Pilih Mode & Jumlah Pemain</p>
+        </div>
+      </div>
+
+      <div class="modal-section-title">Mode Permainan</div>
+      <div class="player-count-selector" id="mode-pills" style="grid-template-columns: repeat(2, 1fr); gap: 8px;">
+        <div class="selector-pill active" data-count="1">🤖 1 vs BOT</div>
+        <div class="selector-pill" data-count="2">👥 2-4 Lokal</div>
+        <div class="selector-pill" data-count="expedition">🗺️ Ekspedisi Pulau</div>
+        <div class="selector-pill" data-count="online">🌐 Mabar Online</div>
+      </div>
+
+      <!-- Ekspedisi Pulau Nusantara Section -->
+      <div id="setup-expedition-section" style="display: none; margin-bottom: 16px;">
+        <div class="modal-section-title" style="margin-top: 10px;">Pilih Tahap Ekspedisi Nusantara</div>
+        <div class="expedition-grid" id="expedition-cards-container">
+          <div class="expedition-card active" data-stage="jawa">
+            <div class="expedition-card-header">
+              <span class="expedition-card-icon">🏛️</span>
+              <span class="expedition-card-title">Tanah Jawa</span>
+            </div>
+            <span class="expedition-card-sub">Majapahit & Candi Borobudur</span>
+            <span class="expedition-card-badge">👑 Tingkat: Pemula</span>
+          </div>
+          <div class="expedition-card" data-stage="bali">
+            <div class="expedition-card-header">
+              <span class="expedition-card-icon">🌺</span>
+              <span class="expedition-card-title">Pulau Dewata</span>
+            </div>
+            <span class="expedition-card-sub">Tirta Suci & Naga Barong</span>
+            <span class="expedition-card-badge">🎋 Tingkat: Menengah</span>
+          </div>
+          <div class="expedition-card" data-stage="sumatera">
+            <div class="expedition-card-header">
+              <span class="expedition-card-icon">🌋</span>
+              <span class="expedition-card-title">Ranah Minang</span>
+            </div>
+            <span class="expedition-card-sub">Danau Toba & Bukit Barisan</span>
+            <span class="expedition-card-badge">🐅 Tingkat: Menengah</span>
+          </div>
+          <div class="expedition-card" data-stage="kalimantan">
+            <div class="expedition-card-header">
+              <span class="expedition-card-icon">🌴</span>
+              <span class="expedition-card-title">Rimba Kahayan</span>
+            </div>
+            <span class="expedition-card-sub">Hutan Hujan Tropis Dayak</span>
+            <span class="expedition-card-badge">🦅 Tingkat: Mahir</span>
+          </div>
+          <div class="expedition-card" data-stage="papua" style="grid-column: span 2;">
+            <div class="expedition-card-header">
+              <span class="expedition-card-icon">❄️</span>
+              <span class="expedition-card-title">Puncak Jayawijaya (Papua)</span>
+            </div>
+            <span class="expedition-card-sub">Salju Abadi Khatulistiwa & Boss Ular Petak 100</span>
+            <span class="expedition-card-badge">🗺️ Boss Akhir Nusantara</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Online Room Section -->
+      <div id="setup-online-section" style="display: none; margin-bottom: 20px;">
+        <div style="display: flex; gap: 8px; margin-bottom: 10px;">
+          <div id="tab-create-room" class="selector-pill active" style="flex: 1; padding: 8px; font-size: 0.8rem; font-weight: 700; cursor: pointer;">
+            ➕ Buat Ruangan
+          </div>
+          <div id="tab-join-room" class="selector-pill" style="flex: 1; padding: 8px; font-size: 0.8rem; font-weight: 700; cursor: pointer;">
+            🔑 Gabung Kode
+          </div>
+        </div>
+
+        <div id="box-create-room" style="background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); border-radius: 14px; padding: 12px; text-align: center;">
+          <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 4px;">Kode Ruangan Mabar Anda:</p>
+          <div id="display-room-code" style="font-family: 'Outfit', sans-serif; font-size: 1.6rem; font-weight: 900; color: #fbbf24; letter-spacing: 2px; margin-bottom: 6px;">-</div>
+          <p id="display-room-status" style="font-size: 0.78rem; color: #38bdf8;">Klik 'Mulai Petualangan' untuk mengaktifkan ruang</p>
+        </div>
+
+        <div id="box-join-room" style="display: none; background: rgba(255,255,255,0.03); border: 1px solid var(--glass-border); border-radius: 14px; padding: 12px;">
+          <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 6px;">Masukkan Kode Ruangan Teman:</p>
+          <input type="text" id="input-room-code" placeholder="Contoh: NUSA421" maxlength="10" style="width: 100%; text-transform: uppercase; background: rgba(15,23,42,0.8); border: 1px solid rgba(255,255,255,0.2); border-radius: 10px; padding: 8px 12px; color: #fbbf24; font-weight: 800; font-size: 1.1rem; text-align: center; outline: none;">
+        </div>
+      </div>
+
+      <div class="modal-section-title">Gaya Papan 3D</div>
+      <div class="player-count-selector" id="setup-board-themes" style="grid-template-columns: repeat(3, 1fr);">
+        <div class="selector-pill btheme-pill active" data-btheme="klasik">📜 Klasik 90-an</div>
+        <div class="selector-pill btheme-pill" data-btheme="candi">🏛️ Candi Kuno</div>
+        <div class="selector-pill btheme-pill" data-btheme="rimba">🌴 Rimba Tropis</div>
+      </div>
+
+      <div class="modal-section-title">Nama Pemain</div>
+      <div class="player-list-form" id="setup-player-inputs">
+        <div class="player-input-row">
+          <div class="player-avatar" style="background: #ef4444;">1</div>
+          <input type="text" id="input-p1" value="Pemain 1" maxlength="16" placeholder="Nama Pemain">
+        </div>
+        <div class="player-input-row" style="opacity: 0.75;">
+          <div class="player-avatar" style="background: #3b82f6;">🤖</div>
+          <input type="text" value="Si Bot Pintar (AI)" disabled>
+        </div>
+      </div>
+
+      <button id="btn-start-game" class="btn-primary" onclick="window.gameInstance && window.gameInstance.onStartGameClick ? window.gameInstance.onStartGameClick() : (document.getElementById('modal-setup').classList.remove('open'))">
+        Mulai Petualangan 🚀
+      </button>
+    </div>
+  </div>
+
+  <!-- Winner Celebration Modal -->
+  <div class="modal-backdrop" id="modal-winner">
+    <div class="modal-dialog" style="text-align: center;">
+      <div style="font-size: 4rem; margin-bottom: 8px;">🏆</div>
+      <h2 style="font-size: 1.8rem; color: #fbbf24; margin-bottom: 8px;">SELAMAT JUARA!</h2>
+      <p id="winner-announcement" style="font-size: 1.1rem; font-weight: 600; margin-bottom: 20px;">
+        Pemain 1 Memenangkan Permainan!
+      </p>
+      <div style="background: rgba(255,255,255,0.05); padding: 14px; border-radius: 14px; margin-bottom: 24px; font-size: 0.9rem; color: var(--text-muted);">
+        Mencapai tepat di kotak 100 dengan selebrasi kemenangan legendaris!
+      </div>
+      <button id="btn-play-again" class="btn-primary">
+        Main Lagi 🔄
+      </button>
+    </div>
+  </div>
+
+  <!-- Rules / Bantuan Modal -->
+  <div class="modal-backdrop" id="modal-rules">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <div style="font-size: 2.2rem;">📜</div>
+        <div>
+          <h2>Aturan Ular Tangga</h2>
+          <p style="color: var(--text-muted); font-size: 0.85rem;">Nostalgia Klasik Indonesia</p>
+        </div>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 12px; font-size: 0.9rem; line-height: 1.5; color: #cbd5e1; margin-bottom: 20px;">
+        <p>1. <strong>Tujuan:</strong> Pemain berlomba dari kotak 1 menuju kotak 100.</p>
+        <p>2. <strong>Tangga Bambu:</strong> Berhenti di bawah tangga membawa pionmu naik memanjat ke atas.</p>
+        <p>3. <strong>Ular Berbisa:</strong> Berhenti di kepala ular membuat pionmu meluncur turun ke petak ekor.</p>
+        <p>4. <strong>Aturan Kotak 100 Pantul:</strong> Harus tepat di kotak 100! Jika angka dadu berlebih, pion akan memantul mundur.</p>
+        <p>5. <strong>Kontrol 3D:</strong> Geser mouse / jari untuk memutar papan secara bebas 360°, scroll untuk zoom.</p>
+      </div>
+      <button id="btn-close-rules" class="btn-primary">
+        Mengerti, Lanjutkan!
+      </button>
+    </div>
+  </div>
+
+  <!-- Kartu Budaya Nusantara / Trivia Modal -->
+  <div class="modal-backdrop" id="modal-trivia">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <div style="font-size: 2.2rem;">⭐</div>
+        <div>
+          <h2 style="color: #fbbf24;">Kartu Budaya Nusantara</h2>
+          <p style="color: var(--text-muted); font-size: 0.85rem;" id="trivia-player-sub">Peluang Emas Langkah Ekstra</p>
+        </div>
+      </div>
+
+      <div id="trivia-content-box">
+        <div style="font-size: 1.05rem; font-weight: 600; line-height: 1.5; margin-bottom: 18px; color: #f8fafc;" id="trivia-question-text">
+          Pertanyaan Budaya...
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px;" id="trivia-options-container">
+          <!-- Dynamically populated options -->
+        </div>
+
+        <div id="trivia-feedback-box" style="display: none; padding: 12px; border-radius: 12px; font-size: 0.88rem; line-height: 1.4; margin-bottom: 16px;">
+        </div>
+
+        <button id="btn-trivia-continue" class="btn-primary" style="display: none;">
+          Lanjutkan 🚀
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Statistik & Rekor Permainan Modal -->
+  <div class="modal-backdrop" id="modal-stats">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <div style="font-size: 2.2rem;">🏆</div>
+        <div>
+          <h2>Statistik & Rekor</h2>
+          <p style="color: var(--text-muted); font-size: 0.85rem;">Pencapaian Ular Tangga 3D</p>
+        </div>
+      </div>
+
+      <div class="stats-grid" id="stats-grid-container">
+        <!-- Dynamically rendered stats cards -->
+      </div>
+
+      <div class="modal-section-title" style="margin-top: 18px; margin-bottom: 10px;">Lencana Prestasi Nusantara 🏅</div>
+      <div class="badges-grid" id="badges-grid-container">
+        <!-- Dynamically rendered badge cards -->
+      </div>
+
+      <div style="display: flex; gap: 10px; margin-top: 20px;">
+        <button id="btn-reset-stats" style="flex: 1; background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.3); color: #fca5a5; border-radius: 12px; padding: 10px; font-size: 0.85rem; font-weight: 600; cursor: pointer;">
+          Reset Data 🗑️
+        </button>
+        <button id="btn-close-stats" class="btn-primary" style="flex: 2; padding: 10px;">
+          Tutup ✕
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Game Logic Script (Three.js ES Module) -->
+  <script type="module" src="game.js?v=2.0.0"></script>
+
+  <!-- PWA Offline Service Worker -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js').catch(() => {});
+      });
+    }
+  </script>
+</body>
+</html>
