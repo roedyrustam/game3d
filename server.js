@@ -18,6 +18,15 @@ const MIME_TYPES = {
 // In-Memory Multiplayer Rooms
 const rooms = new Map();
 
+function getRoomData(room) {
+  if (!room) return null;
+  return {
+    id: room.id,
+    players: room.players,
+    createdAt: room.createdAt
+  };
+}
+
 function sendJson(res, status, data) {
   res.writeHead(status, {
     'Content-Type': 'application/json; charset=utf-8',
@@ -67,7 +76,7 @@ const server = http.createServer((req, res) => {
         createdAt: Date.now()
       };
       rooms.set(code, room);
-      sendJson(res, 200, { success: true, roomId: code, playerIndex: 0, room });
+      sendJson(res, 200, { success: true, roomId: code, playerIndex: 0, room: getRoomData(room) });
     });
     return;
   }
@@ -107,7 +116,7 @@ const server = http.createServer((req, res) => {
         } catch(e) {}
       });
 
-      sendJson(res, 200, { success: true, roomId: code, playerIndex: pIndex, room });
+      sendJson(res, 200, { success: true, roomId: code, playerIndex: pIndex, room: getRoomData(room) });
     });
     return;
   }
@@ -155,7 +164,7 @@ const server = http.createServer((req, res) => {
     });
 
     room.clients.push(res);
-    res.write(`data: ${JSON.stringify({ type: 'ROOM_SYNC', room })}\n\n`);
+    res.write(`data: ${JSON.stringify({ type: 'ROOM_SYNC', room: getRoomData(room) })}\n\n`);
 
     req.on('close', () => {
       const idx = room.clients.indexOf(res);

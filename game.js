@@ -325,6 +325,50 @@ class AudioSynthesizer {
     });
   }
 
+  playRoyalFanfare() {
+    if (!this.enabled) return;
+    this.init();
+    const chords = [
+      { f: 392.00, d: 0.18 }, // G4
+      { f: 523.25, d: 0.18 }, // C5
+      { f: 659.25, d: 0.18 }, // E5
+      { f: 783.99, d: 0.35 }, // G5
+      { f: 1046.50, d: 0.65 } // C6
+    ];
+    let time = 0;
+    chords.forEach(item => {
+      setTimeout(() => {
+        this.playTone(item.f, item.d, 'triangle', 0.45);
+        this.playTone(item.f * 0.5, item.d, 'sine', 0.3);
+      }, time * 1000);
+      time += item.d + 0.04;
+    });
+  }
+
+  playGongStrike() {
+    if (!this.enabled) return;
+    this.init();
+    if (!this.ctx) return;
+    try {
+      const osc = this.ctx.createOscillator();
+      const osc2 = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(130.81, this.ctx.currentTime); // C3 deep gong
+      osc2.type = 'triangle';
+      osc2.frequency.setValueAtTime(261.63, this.ctx.currentTime); // C4 overtone
+      gain.gain.setValueAtTime(0.5, this.ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 1.8);
+      osc.connect(gain);
+      osc2.connect(gain);
+      gain.connect(this.ctx.destination);
+      osc.start();
+      osc2.start();
+      osc.stop(this.ctx.currentTime + 1.8);
+      osc2.stop(this.ctx.currentTime + 1.8);
+    } catch (e) {}
+  }
+
   startBGM() {
     if (!this.enabled || this.bgmRunning) return;
     this.init();
@@ -510,6 +554,16 @@ class SnakeAndLadderGame {
     this.currentExpedition = 'jawa';
     this.isExpeditionMode = false;
 
+    // Turnamen Mini Knockout Bracket (Piala Raja Nusantara)
+    this.isTournamentMode = false;
+    this.tournamentRound = 'semifinal'; // 'semifinal' | 'final'
+    this.tournamentPlayer = { name: 'Pemain 1', accessory: 'mahkota', motif: 'megamendung' };
+    this.tournamentBracket = {
+      sf1: { p1: 'Pemain Anda', p2: 'Tuanku Imam 🐅', winner: null, status: 'ready' },
+      sf2: { p1: 'Gajah Mada ⚔️', p2: 'I Gusti Ngurah 🌺', winner: null, status: 'waiting' },
+      final: { p1: 'Menunggu SF1', p2: 'Menunggu SF2', winner: null, status: 'waiting' }
+    };
+
     // 3D Dynamic Weather Engine
     this.currentWeather = 'cerah'; // 'cerah' | 'hujan' | 'daun' | 'kabut'
     this.rainParticles = null;
@@ -667,6 +721,14 @@ class SnakeAndLadderGame {
           icon: '🗺️',
           unlocked: (this.stats.expeditionsCompleted || 0) >= 1,
           progress: `${Math.min(1, this.stats.expeditionsCompleted || 0)}/1`
+        },
+        {
+          id: 'pialaraja',
+          title: 'Juara Piala Raja',
+          desc: 'Menangkan Turnamen Knockout Piala Raja Nusantara',
+          icon: '🏆',
+          unlocked: (this.stats.tournamentsWon || 0) >= 1,
+          progress: `${Math.min(1, this.stats.tournamentsWon || 0)}/1`
         }
       ];
 
@@ -2577,6 +2639,58 @@ class SnakeAndLadderGame {
     }
     this.triggerPawnEmote(winner, 'Jawara 1! 👑', '#fbbf24', 6000);
     this.spawnConfetti();
+
+    // Turnamen Piala Raja Resolution
+    if (this.isTournamentMode) {
+      if (this.tournamentRound === 'semifinal') {
+        if (!winner.isAI) {
+          this.tournamentBracket.sf1.winner = winner.name;
+          this.tournamentBracket.sf1.status = 'done';
+          this.tournamentBracket.sf2.winner = 'Gajah Mada ⚔️';
+          this.tournamentBracket.sf2.status = 'done';
+          this.tournamentBracket.final.p1 = winner.name;
+          this.tournamentBracket.final.p2 = 'Gajah Mada ⚔️';
+          this.tournamentBracket.final.status = 'ready';
+          this.showToast(`🏆 Kemenangan Semifinal! Bersiap untuk Grand Final!`);
+          setTimeout(() => {
+            this.showTournamentBracketModal('sf_win');
+          }, 1800);
+          return;
+        } else {
+          this.tournamentBracket.sf1.winner = winner.name;
+          this.tournamentBracket.sf1.status = 'done';
+          this.tournamentBracket.sf2.winner = 'Gajah Mada ⚔️';
+          this.tournamentBracket.sf2.status = 'done';
+          this.tournamentBracket.final.p1 = winner.name;
+          this.tournamentBracket.final.p2 = 'Gajah Mada ⚔️';
+          this.showToast(`Gugur di Semifinal... Coba lagi!`);
+          setTimeout(() => {
+            this.showTournamentBracketModal('sf_lost');
+          }, 1800);
+          return;
+        }
+      } else if (this.tournamentRound === 'final') {
+        if (!winner.isAI) {
+          this.recordStat('tournamentsWon', 1);
+          this.tournamentBracket.final.winner = winner.name;
+          this.tournamentBracket.final.status = 'champion';
+          audio.playRoyalFanfare();
+          this.showToast(`👑 SANG JUARA PIALA RAJA NUSANTARA! 🏆`);
+          setTimeout(() => {
+            this.showTournamentBracketModal('final_win');
+          }, 1800);
+          return;
+        } else {
+          this.tournamentBracket.final.winner = winner.name;
+          this.tournamentBracket.final.status = 'done';
+          this.showToast(`Juara 2 (Runner-Up) Piala Raja!`);
+          setTimeout(() => {
+            this.showTournamentBracketModal('final_lost');
+          }, 1800);
+          return;
+        }
+      }
+    }
 
     const winnerAnnounceEl = document.getElementById('winner-announcement');
     if (this.isExpeditionMode && !winner.isAI) {
