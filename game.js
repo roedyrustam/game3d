@@ -3,11 +3,13 @@ import { OrbitControls } from './lib/OrbitControls.js';
 
 import { BOARD_SIZE, TILE_SIZE, BOARD_WIDTH, BOARD_OFFSET, BOARD_SURFACE_Y, SNAKES, LADDERS, MYSTERY_TILES, CULTURE_TILES, TRIVIA_QUESTIONS, PLAYER_COLORS, HEADGEARS, SOUNDPACKS, BATIK_MOTIFS, NUSANTARA_DIALECTS, DIALECT_BANTER, EXPEDITIONS, TOURNAMENT_BOTS } from './constants.js';
 import { audio } from './audio.js';
+import { SUPABASE_URL, SUPABASE_KEY } from './config.js';
 // ==========================================
 // 3D GAME STATE & APP ENGINE
 // ==========================================
 class SnakeAndLadderGame {
   constructor() {
+    this.supabase = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
     this.container = document.getElementById('canvas-container');
     this.players = [];
     this.currentTurn = 0;
@@ -3257,104 +3259,100 @@ class SnakeAndLadderGame {
   }
 
   // ------------------------------------------
-  // Online Room Multiplayer Engine (WebRTC / SSE)
+  // Online Room Multiplayer Engine (Supabase Realtime)
   // ------------------------------------------
   async createOnlineRoom(playerName, accessory) {
-    try {
-      this.showToast('Membuat Ruangan Mabar Online...');
-      const res = await fetch('/api/room/create', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: playerName, accessory })
-      });
-      const data = await res.json();
-      if (!data.success) {
-        alert(data.message || 'Gagal membuat ruangan.');
-        return;
-      }
-
-      this.isOnlineGame = true;
-      this.roomId = data.roomId;
-      this.myPlayerIndex = 0;
-
-      const codeDisplay = document.getElementById('display-room-code');
-      const statusDisplay = document.getElementById('display-room-status');
-      if (codeDisplay) codeDisplay.innerText = this.roomId;
-      if (statusDisplay) {
-        statusDisplay.innerHTML = `🟢 Ruangan aktif! Bagikan kode <strong>${this.roomId}</strong> ke teman.<br>Menunggu teman bergabung...`;
-      }
-
-      this.initSSEConnection(this.roomId);
-    } catch(e) {
-      console.error(e);
-      alert('Gagal menghubungi server ruangan. Pastikan terhubung ke jaringan lokal.');
+    if (!this.supabase) {
+      alert('Supabase tidak terkonfigurasi. Pastikan config.js sudah diset.');
+      return;
     }
+    this.showToast('Membuat Ruangan Mabar Online...');
+    this.isOnlineGame = true;
+    this.roomId = 'ROOM-' + Math.floor(1000 + Math.random() * 9000);
+    this.myPlayerIndex = 0;
+    
+    // Simpan data player lokal
+    this.localPlayerConfig = { name: playerName, isAI: false, accessory, motif: 'polos' };
+
+    const codeDisplay = document.getElementById('display-room-code');
+    const statusDisplay = document.getElementById('display-room-status');
+    if (codeDisplay) codeDisplay.innerText = this.roomId;
+    if (statusDisplay) {
+      statusDisplay.innerHTML = `🟢 Ruangan aktif! Bagikan kode <strong>${this.roomId}</strong> ke teman.<br>Menunggu teman bergabung...`;
+    }
+
+    this.initSupabaseChannel(this.roomId, 'host');
   }
 
   async joinOnlineRoom(roomId, playerName, accessory) {
-    if (!roomId) {
-      alert('Silakan masukkan Kode Ruangan!');
+    if (!this.supabase || !roomId) {
+      alert('Silakan masukkan Kode Ruangan dan pastikan Supabase terkonfigurasi!');
       return;
     }
+    this.showToast(`Menghubungkan ke Ruangan ${roomId}...`);
+    this.isOnlineGame = true;
+    this.roomId = roomId.toUpperCase();
+    this.myPlayerIndex = 1;
+    
+    this.localPlayerConfig = { name: playerName, isAI: false, accessory, motif: 'polos' };
 
-    try {
-      this.showToast(`Menghubungkan ke Ruangan ${roomId}...`);
-      const res = await fetch('/api/room/join', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ roomId, name: playerName, accessory })
-      });
-      const data = await res.json();
-      if (!data.success) {
-        alert(data.message || 'Gagal bergabung ke ruangan.');
-        return;
-      }
-
-      this.isOnlineGame = true;
-      this.roomId = data.roomId;
-      this.myPlayerIndex = data.playerIndex;
-
-      document.getElementById('modal-setup').classList.remove('open');
-      this.setupPlayers(data.room.players);
-      this.initSSEConnection(this.roomId);
-      this.showToast(`Berhasil bergabung ke Ruangan ${this.roomId}!`);
-      this.syncOnlineTurnButtons();
-    } catch(e) {
-      console.error(e);
-      alert('Gagal menghubungi server ruangan.');
-    }
+    this.initSupabaseChannel(this.roomId, 'client');
   }
 
-  initSSEConnection(roomId) {
-    if (this.eventSource) {
-      this.eventSource.close();
+  initSupabaseChannel(roomId, role) {
+    if (this.channel) {
+      this.supabase.removeChannel(this.channel);
     }
-
-    this.eventSource = new EventSource(`/api/room/events?roomId=${roomId}`);
-    this.eventSource.onmessage = (e) => {
-      try {
-        const payload = JSON.parse(e.data);
-        this.handleRoomAction(payload);
-      } catch(err) {
-        console.error('SSE Error:', err);
+    
+    this.channel = this.supabase.channel(`room:${roomId}`, {
+      config: {
+        broadcast: { ack: false }
       }
-    };
+    });
+
+    this.channel.on('broadcast', { event: 'game_action' }, ({ payload }) => {
+      this.handleRoomAction(payload);
+    });
+
+    this.channel.subscribe(async (status) => {
+      if (status === 'SUBSCRIBED') {
+        if (role === 'client') {
+          // Client joined, broadcast presence to host
+          this.sendRoomAction({
+            type: 'PLAYER_JOINED',
+            player: this.localPlayerConfig
+          });
+        }
+      }
+    });
   }
 
   handleRoomAction(payload) {
     if (payload.type === 'PLAYER_JOINED') {
-      const statusDisplay = document.getElementById('display-room-status');
-      if (statusDisplay) {
-        statusDisplay.innerHTML = `🎉 <strong>${payload.player.name}</strong> telah bergabung! Memulai permainan...`;
+      if (this.myPlayerIndex === 0) { // Host
+        const statusDisplay = document.getElementById('display-room-status');
+        if (statusDisplay) {
+          statusDisplay.innerHTML = `🎉 <strong>${payload.player.name}</strong> telah bergabung! Memulai permainan...`;
+        }
+        const players = [this.localPlayerConfig, payload.player];
+        
+        // Host broadcast start game
+        setTimeout(() => {
+          this.sendRoomAction({ type: 'START_GAME', players });
+          document.getElementById('modal-setup').classList.remove('open');
+          this.setupPlayers(players);
+          this.syncOnlineTurnButtons();
+        }, 1200);
       }
-      setTimeout(() => {
+    } else if (payload.type === 'START_GAME') {
+      if (this.myPlayerIndex === 1) { // Client
+        this.showToast(`Berhasil bergabung ke Ruangan ${this.roomId}!`);
         document.getElementById('modal-setup').classList.remove('open');
         this.setupPlayers(payload.players);
         this.syncOnlineTurnButtons();
-      }, 1200);
+      }
     } else if (payload.type === 'DICE_ROLL') {
       if (payload.playerIndex !== this.myPlayerIndex) {
-        // Remote opponent rolled dice!
         this.onRemoteDiceLanded(payload.playerIndex, payload.rollValue);
       }
     } else if (payload.type === 'EMOTE') {
@@ -3369,12 +3367,12 @@ class SnakeAndLadderGame {
   }
 
   sendRoomAction(action) {
-    if (!this.isOnlineGame || !this.roomId) return;
-    fetch('/api/room/action', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ roomId: this.roomId, action })
-    }).catch(() => {});
+    if (!this.isOnlineGame || !this.channel) return;
+    this.channel.send({
+      type: 'broadcast',
+      event: 'game_action',
+      payload: action
+    });
   }
 
   syncOnlineTurnButtons() {
