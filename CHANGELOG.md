@@ -1,6 +1,26 @@
 # Changelog
 All notable changes to the "Ular Tangga 3D Nusantara" project are documented in this file.
 
+## [2.1.0] - 2026-09-12 (Turnamen Piala Raja Nusantara 🏆)
+### Added
+- **Mode Turnamen Mini Knockout Bracket (Piala Raja Nusantara 🏆)**:
+  - Sistem gugur 4 Pendekar Nusantara (Babak Semifinal ➔ Grand Final) memperebutkan Mahkota Emas dan Trofi Piala Raja:
+    - **Semifinal A (Laga Utama)**: Pemain bertanding melawan Tuanku Imam 🐅 (Jawara Ranah Minang).
+    - **Semifinal B**: Pertarungan legendaris antara Gajah Mada ⚔️ (Patih Majapahit) vs I Gusti Ngurah 🌺 (Ksatria Bali).
+    - **Grand Final**: Pemenang Semifinal A menantang Jawara Semifinal B di arena megah Candi Kerajaan dengan alunan Gamelan Pelog dan taburan daun rimba.
+  - **Bagan Interaktif Turnamen Knockout (`#modal-tournament-bracket`)**:
+    - Visualisasi bagan pohon eliminasi dengan status badge dinamis (`BERTANDING`, `MENANG`, `GUGUR`, `JUARA 1`, `RUNNER-UP`).
+    - Animasi penanda laga aktif dengan kilau emas neon (`pulseTag`).
+    - Komentator status pertandingan interaktif dan tombol aksi transisi babak ("Lanjut ke Grand Final ⚔️", "Tantang Lagi 🔄").
+- **Audio Synthesizer Web Audio API Kerajaan**:
+  - `playRoyalFanfare()`: Rangkaian akor nada brass megah (*regal fanfare chime*) saat pembukaan babak final dan penobatan sang juara.
+  - `playGongStrike()`: Resonansi dentang gong perunggu dalam berfrekuensi rendah 130 Hz dengan peluruhan eksponensial alami khas nusantara.
+- **Lencana Prestasi ke-8**:
+  - Lencana baru di Papan Statistik & Rekor: **🏆 Juara Piala Raja** ("Menangkan Turnamen Knockout Piala Raja Nusantara").
+### Fixed
+- **Multiplayer Server JSON Serialization**:
+  - Memperbaiki penanganan objek response klien HTTP SSE pada `server.js` (`getRoomData`) agar bebas dari *circular structure error*.
+
 ## [2.0.0] - 2026-09-12 (Grand Milestone Release 🗺️🌺👑)
 ### Added
 - **Motif Batik Tradisional Nusantara 3D Prosedural pada Pion**:
