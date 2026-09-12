@@ -2,6 +2,10 @@
 
 ## Status: v2.0.0 Grand Milestone: Motif Batik Pion 3D & Mode Ekspedisi Pulau Nusantara 🗺️🌺👑
 
+- [x] **Mini-Games Tantangan Catur Jawa di Petak 45**: Modal Tic-Tac-Toe melawan AI Bot dengan konsekuensi menang (+3 petak) dan kalah (-3 petak).
+- [x] **Voice Synthesizer (TTS) Multi-Dialek**: Balon obrolan dibacakan via Web Speech API dengan pitch & rate khas daerah Nusantara.
+- [x] **Mode Malam Sakral Berpendar (Neon Mode)**: Skema warna neon emissive untuk bidak, ular, dan tangga yang toggle-able via setting mode malam.
+- [x] **Multiplayer Online Supabase**: Infrastruktur Mabar Online Real-Time telah migrasi penuh ke Supabase Channels.
 - [x] **Motif Batik Tradisional Nusantara 3D Prosedural pada Pion**: Generator tekstur kain adat Indonesia 100% prosedural via HTML5 Canvas 2D (Mega Mendung 🌊, Batik Kawung 🌺, Songket Emas 🧵, Tenun Ikat 🪢, Polos Glossy ✨) membalut tubuh bidak pion 3D Three.js.
 - [x] **Mode Ekspedisi Pulau Nusantara (Archipelago Quest Stages)**: 5 tahap petualangan pulau legendaris Indonesia (Tanah Jawa Majapahit 🏛️, Pulau Dewata Bali 🌺, Ranah Minang Sumatera 🌋, Rimba Kahayan Kalimantan 🌴, Puncak Jayawijaya Papua ❄️) dengan suasana, cuaca, dan tantangan khusus.
 - [x] **Sistem Lencana Prestasi Penakluk Nusantara**: Lencana ke-7 "🗺️ Penakluk Nusantara" terbuka saat menuntaskan tahap ekspedisi pulau.

@@ -1,7 +1,7 @@
 # Product Requirements Document (PRD)
 **Project**: Ular Tangga 3D Nusantara (Procedural 3D Snakes & Ladders)
-**Version**: 1.0.0-draft
-**Status**: In Ideation / Brainstorming
+**Version**: 2.2.0
+**Status**: Production Ready / Released
 **Created**: 2026-09-12
 **Last Updated**: 2026-09-12
 
