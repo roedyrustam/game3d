@@ -117,6 +117,53 @@ const BATIK_MOTIFS = [
   { id: 'tenun', name: 'Tenun Ikat', icon: '🪢', desc: 'Motif Geometris Etnik Toraja/Sumba' }
 ];
 
+// Multi-Dialek Nusantara Voice Synthesizer Profiles & Banter Dictionaries
+const NUSANTARA_DIALECTS = [
+  { id: 'jawa', name: 'Dialek Jawa', icon: 'ꦗ', pitch: 1.0, rate: 1.05 },
+  { id: 'sunda', name: 'Dialek Sunda', icon: 'ᮞ', pitch: 1.25, rate: 1.0 },
+  { id: 'minang', name: 'Dialek Minang', icon: '🐅', pitch: 1.1, rate: 1.15 },
+  { id: 'betawi', name: 'Dialek Betawi', icon: '🏙️', pitch: 0.95, rate: 1.1 },
+  { id: 'bali', name: 'Dialek Bali', icon: '🌺', pitch: 1.2, rate: 0.95 }
+];
+
+const DIALECT_BANTER = {
+  jawa: {
+    SNAKE: ["Waduh, dicokot ulo rek!", "Aduh, melorot mudun!", "Apes tenan, kena ulo!"],
+    LADDER: ["Munggah tangga, mantep tenan!", "Alhamdulillah, munggah dhuwur!", "Gas terus munggah lur!"],
+    SIX: ["Hoki tenan oleh nomer nem!", "Mantep, oleh dadu nem rek!", "Gas banter nomer nem!"],
+    BOUNCE: ["Yah kebablasen, mencelat!", "Mundur maneh rek!", "Kelewat petak satus!"],
+    WIN: ["Sopo sing iso ngalahke aku? Juara!", "Juara siji tenan rek!", "Menang tenan euy, mantep!"]
+  },
+  sunda: {
+    SNAKE: ["Aduh cilaka, kacugak oray!", "Melorot deui euy, aduh!", "Hadeuh, dipacok oray!"],
+    LADDER: ["Nerekel naek taraje euy!", "Mantep pisan naek ka luhur!", "Asik naek taraje baraya!"],
+    SIX: ["Asik meunang genep baraya!", "Hoki pisan meunang genep!", "Gaspol genep lur!"],
+    BOUNCE: ["Kelewatan euy, mundur deui!", "Wah mantul mundur baraya!", "Can pas saratus!"],
+    WIN: ["Punten mang, urang nu juara!", "Hore urang juara baraya!", "Alhamdulillah rengse meunang!"]
+  },
+  minang: {
+    SNAKE: ["Ondeh mande, digigik ula!", "Maluncua turun denai!", "Aduh cilako, kana ula gadang!"],
+    LADDER: ["Mandaki janjang laju bana!", "Rancak bana, naiak ka ateh!", "Taruih mandaki dunsanak!"],
+    SIX: ["Mantaap bana dapek anam!", "Hoki gadang dapek anam!", "Laju taruih anam!"],
+    BOUNCE: ["Talampau laju, tapantua baliak!", "Mundua saketek dunsanak!", "Alun tapek saratuih!"],
+    WIN: ["Alhamdulillah, den juaronyo!", "Gagah bana, denai juaro ciek!", "Alah salasai, rancak bana!"]
+  },
+  betawi: {
+    SNAKE: ["Buset dah, dipatok uler tong!", "Meluncur ke bawah dah gua!", "Apes bener ketok uler!"],
+    LADDER: ["Gile aje, ngibrit naek tangga!", "Mantap jiwa, naek ke atas!", "Langsung meluncur naek tong!"],
+    SIX: ["Asik dapet enam cuy, hoki!", "Mantul dapet enam nih bos!", "Sikat abis dapet enam!"],
+    BOUNCE: ["Kebablasan lu tong, ngoper balik!", "Mantul mundur dah jadinya!", "Belom pas cepek nih!"],
+    WIN: ["Gue nih bos, senggol dong!", "Juara atu kite tong!", "Kaga ada obat, gue juarenye!"]
+  },
+  bali: {
+    SNAKE: ["Aduh biang, kena lelipi gede!", "Ulung nolosor ke beten!", "Aduh kesisip lelipi!"],
+    LADDER: ["Mapan gati, menek undag luung!", "Becik gati menek undag!", "Lancar jaya menek kaja!"],
+    SIX: ["Becik gati maan angka nem!", "Hoki melah maan nem!", "Maju terus maan nem!"],
+    BOUNCE: ["Liwat petakne, mawali ke duri!", "Mundurin jani timpang!", "Kondens pas satus!"],
+    WIN: ["Tiang menang jengah, rahayu!", "Melah gati tiang nomer satu!", "Rahayu sareng sami, juara!"]
+  }
+};
+
 // 5 Island Expedition Stages (Quest Mode)
 const EXPEDITIONS = [
   {
@@ -551,6 +598,8 @@ class SnakeAndLadderGame {
     this.activeEmotes = []; // Active 3D floating speech bubbles
     this.playerHeadgears = ['mahkota', 'caping', 'udeng', 'peci'];
     this.playerMotifs = ['megamendung', 'kawung', 'songket', 'tenun'];
+    this.playerDialects = ['jawa', 'sunda', 'minang', 'betawi'];
+    this.voiceEnabled = true;
     this.currentExpedition = 'jawa';
     this.isExpeditionMode = false;
 
@@ -982,6 +1031,19 @@ class SnakeAndLadderGame {
       this.ambientLight.color.set(0xfed7aa);
       this.ambientLight.intensity = 1.0;
       this.rimLight.color.set(0xec4899);
+    } else if (theme === 'neon') {
+      // Mode Malam Sakral Berpendar (Glow-in-the-dark Neon Nusantara)
+      this.scene.background.set(0x040614);
+      this.scene.fog.color.set(0x040614);
+      this.sunLight.color.set(0x06b6d4); // Neon Cyan
+      this.sunLight.intensity = 1.3;
+      this.ambientLight.color.set(0xa855f7); // Neon Violet
+      this.ambientLight.intensity = 1.5;
+      this.rimLight.color.set(0xfacc15); // Neon Gold
+      if (this.sparks) {
+        this.sparks.material.color.set(0x22d3ee);
+        this.sparks.material.size = 0.55;
+      }
     } else {
       // malam (default)
       this.scene.background.set(0x0a0f1d);
@@ -991,6 +1053,10 @@ class SnakeAndLadderGame {
       this.ambientLight.color.set(0xfff6ea);
       this.ambientLight.intensity = 1.1;
       this.rimLight.color.set(0x38bdf8);
+      if (this.sparks) {
+        this.sparks.material.color.set(0xfde047);
+        this.sparks.material.size = 0.35;
+      }
     }
   }
 
@@ -2022,12 +2088,38 @@ class SnakeAndLadderGame {
     });
   }
 
+  // Multi-Dialek Voice Synthesizer & Speech Banter (v2.2.0)
+  speakDialect(player, eventType) {
+    if (!player) return;
+    const dialectId = player.dialect || 'jawa';
+    const dialectObj = NUSANTARA_DIALECTS.find(d => d.id === dialectId) || NUSANTARA_DIALECTS[0];
+    const dialectPhrases = DIALECT_BANTER[dialectId] || DIALECT_BANTER.jawa;
+    const phrases = dialectPhrases[eventType] || dialectPhrases.WIN;
+    const phrase = phrases[Math.floor(Math.random() * phrases.length)];
+
+    // 1. Trigger 3D speech bubble above pawn head
+    this.triggerPawnEmote(player, phrase, player.colorHex, 2800);
+
+    // 2. Synthesize voice speech with Indonesian phonetic utterance
+    if (this.voiceEnabled && 'speechSynthesis' in window) {
+      try {
+        window.speechSynthesis.cancel();
+        const cleanText = phrase.replace(/[^\w\s,!?]/gi, '').trim();
+        const utter = new SpeechSynthesisUtterance(cleanText);
+        utter.lang = 'id-ID';
+        utter.pitch = dialectObj.pitch;
+        utter.rate = dialectObj.rate;
+        window.speechSynthesis.speak(utter);
+      } catch (e) {}
+    }
+  }
+
   // Setup Players
   setupPlayers(playerConfigs) {
     if (!playerConfigs || playerConfigs.length === 0) {
       playerConfigs = [
-        { name: 'Pemain 1', isAI: false, accessory: 'mahkota', motif: 'megamendung' },
-        { name: 'Si Bot Pintar', isAI: true, accessory: 'caping', motif: 'kawung' }
+        { name: 'Pemain 1', isAI: false, accessory: 'mahkota', motif: 'megamendung', dialect: 'jawa' },
+        { name: 'Si Bot Pintar', isAI: true, accessory: 'caping', motif: 'kawung', dialect: 'sunda' }
       ];
     }
 
@@ -2048,6 +2140,7 @@ class SnakeAndLadderGame {
     this.players = playerConfigs.map((cfg, index) => {
       const color = PLAYER_COLORS[index % PLAYER_COLORS.length];
       const motif = cfg.motif || this.playerMotifs[index] || 'polos';
+      const dialect = cfg.dialect || this.playerDialects[index] || NUSANTARA_DIALECTS[index % NUSANTARA_DIALECTS.length].id;
       const mesh = this.createPawnMesh(color.int, index, cfg.accessory, motif, color.hex);
       this.scene.add(mesh);
 
@@ -2060,6 +2153,7 @@ class SnakeAndLadderGame {
         mesh: mesh,
         accessory: cfg.accessory || mesh.userData.accessory,
         motif: motif,
+        dialect: dialect,
         hasShield: false,
         shieldMesh: null
       };
