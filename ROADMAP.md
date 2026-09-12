@@ -65,8 +65,15 @@
 - [x] Desain dialog modal responsif dengan scrolling lancar di semua perangkat
 - [x] Service worker PWA Network-First untuk pembaruan instan
 
-## Fase 11: Rencana Fitur Masa Depan (v2.1.0+)
-- [ ] Turnamen Mini Knockout Bracket (Piala Raja Nusantara)
+## Fase 11: Turnamen Mini Knockout Bracket (v2.1.0)
+- [x] Turnamen Mini Knockout Bracket (Piala Raja Nusantara 🏆)
+- [x] Sistem eliminasi 4 Pendekar Nusantara (Semifinal A, Semifinal B, Grand Final)
+- [x] Bagan interaktif Knockout Bracket Modal (`#modal-tournament-bracket`)
+- [x] Lencana Prestasi ke-8 "🏆 Juara Piala Raja" di Papan Statistik
+- [x] Audio Web Audio API Fanfar Raja (`playRoyalFanfare`) dan Dentang Gong Tradisional (`playGongStrike`)
+- [x] Perbaikan circular JSON serialization pada multiplayer room server
+
+## Fase 12: Rencana Fitur Masa Depan (v2.2.0+)
 - [ ] Voice Synthesizer / Sound Banter Pemain Multi-Dialek
 - [ ] Mode Malam Sakral Berpendar (Glow-in-the-dark Neon Nusantara)
 - [ ] Mini-Games Tantangan Catur Jawa di Petak Khusus

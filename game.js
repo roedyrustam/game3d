@@ -2746,21 +2746,36 @@ class SnakeAndLadderGame {
         const mode = pill.dataset.count;
         const onlineSec = document.getElementById('setup-online-section');
         const expeditionSec = document.getElementById('setup-expedition-section');
+        const tournamentSec = document.getElementById('setup-tournament-section');
         const startBtn = document.getElementById('btn-start-game');
 
         if (mode === 'online') {
           if (onlineSec) onlineSec.style.display = 'block';
           if (expeditionSec) expeditionSec.style.display = 'none';
+          if (tournamentSec) tournamentSec.style.display = 'none';
           if (startBtn) startBtn.innerText = 'Mulai Mabar Online 🌐';
           this.renderPlayerForm(1);
         } else if (mode === 'expedition') {
           if (onlineSec) onlineSec.style.display = 'none';
           if (expeditionSec) expeditionSec.style.display = 'block';
+          if (tournamentSec) tournamentSec.style.display = 'none';
           if (startBtn) startBtn.innerText = 'Mulai Ekspedisi Nusantara 🗺️';
           this.renderPlayerForm(1);
+        } else if (mode === 'tournament') {
+          if (onlineSec) onlineSec.style.display = 'none';
+          if (expeditionSec) expeditionSec.style.display = 'none';
+          if (tournamentSec) tournamentSec.style.display = 'block';
+          if (startBtn) startBtn.innerText = 'Mulai Babak Semifinal ⚔️';
+          this.renderPlayerForm(1);
+          const p1Input = document.getElementById('input-p1');
+          const tPreviewP1 = document.getElementById('t-preview-p1');
+          if (p1Input && tPreviewP1) {
+            tPreviewP1.innerText = p1Input.value.trim() || 'Pemain Anda';
+          }
         } else {
           if (onlineSec) onlineSec.style.display = 'none';
           if (expeditionSec) expeditionSec.style.display = 'none';
+          if (tournamentSec) tournamentSec.style.display = 'none';
           if (startBtn) startBtn.innerText = 'Mulai Petualangan 🚀';
           this.renderPlayerForm(parseInt(mode, 10) || 1);
         }
@@ -3001,6 +3016,15 @@ class SnakeAndLadderGame {
       this.confettiParticles = [];
       document.getElementById('modal-setup').classList.add('open');
     });
+
+    // Tournament Bracket Menu Button
+    const btnBracketMenu = document.getElementById('btn-bracket-menu');
+    if (btnBracketMenu) {
+      btnBracketMenu.addEventListener('click', () => {
+        document.getElementById('modal-tournament-bracket').classList.remove('open');
+        document.getElementById('modal-setup').classList.add('open');
+      });
+    }
   }
 
   onStartGameClick() {
@@ -3021,6 +3045,14 @@ class SnakeAndLadderGame {
         const roomCode = document.getElementById('input-room-code')?.value?.trim()?.toUpperCase();
         this.joinOnlineRoom(roomCode, p1Name, p1Acc);
       }
+      return;
+    }
+
+    if (mode === 'tournament') {
+      const p1Name = document.getElementById('input-p1')?.value?.trim() || 'Pemain Anda';
+      const p1Acc = this.playerHeadgears[0] || 'mahkota';
+      const p1Motif = this.playerMotifs[0] || 'megamendung';
+      this.initTournament(p1Name, p1Acc, p1Motif);
       return;
     }
 
@@ -3050,6 +3082,7 @@ class SnakeAndLadderGame {
     }
 
     this.isExpeditionMode = false;
+    this.isTournamentMode = false;
     const configs = [];
     if (mode === '1') {
       const p1Name = document.getElementById('input-p1')?.value?.trim() || 'Pemain 1';
@@ -3073,6 +3106,175 @@ class SnakeAndLadderGame {
     const modal = document.getElementById('modal-setup');
     if (modal) modal.classList.remove('open');
     this.setupPlayers(configs);
+  }
+
+  // ------------------------------------------
+  // Turnamen Mini Knockout Bracket (Piala Raja Nusantara)
+  // ------------------------------------------
+  initTournament(p1Name, p1Acc, p1Motif) {
+    this.isTournamentMode = true;
+    this.isExpeditionMode = false;
+    this.tournamentRound = 'semifinal';
+    this.tournamentPlayer = { name: p1Name, accessory: p1Acc, motif: p1Motif };
+    this.tournamentBracket = {
+      sf1: { p1: p1Name, p2: 'Tuanku Imam 🐅', winner: null, status: 'active' },
+      sf2: { p1: 'Gajah Mada ⚔️', p2: 'I Gusti Ngurah 🌺', winner: null, status: 'waiting' },
+      final: { p1: 'Pemenang SF1', p2: 'Pemenang SF2', winner: null, status: 'waiting' }
+    };
+    this.startTournamentMatch('semifinal');
+  }
+
+  startTournamentMatch(round) {
+    this.tournamentRound = round;
+    const modal = document.getElementById('modal-setup');
+    if (modal) modal.classList.remove('open');
+    const bracketModal = document.getElementById('modal-tournament-bracket');
+    if (bracketModal) bracketModal.classList.remove('open');
+    const winnerModal = document.getElementById('modal-winner');
+    if (winnerModal) winnerModal.classList.remove('open');
+
+    if (round === 'semifinal') {
+      this.setBoardTheme('candi');
+      this.setWeather('cerah');
+      audio.setSoundpack('pelog');
+      audio.playGongStrike();
+
+      const configs = [
+        { name: this.tournamentPlayer.name, isAI: false, accessory: this.tournamentPlayer.accessory, motif: this.tournamentPlayer.motif },
+        { name: 'Tuanku Imam 🐅', isAI: true, accessory: 'tanjak', motif: 'songket' }
+      ];
+      this.setupPlayers(configs);
+      this.showToast('🏆 Semifinal Piala Raja: Hadapi Tuanku Imam dari Ranah Minang!');
+      this.addHistoryLog('⚔️ <strong>Babak Semifinal Piala Raja Dimulai!</strong>');
+    } else if (round === 'final') {
+      this.setBoardTheme('candi');
+      this.setWeather('daun');
+      audio.setSoundpack('gamelan');
+      audio.playRoyalFanfare();
+
+      const configs = [
+        { name: this.tournamentPlayer.name, isAI: false, accessory: this.tournamentPlayer.accessory, motif: this.tournamentPlayer.motif },
+        { name: 'Gajah Mada ⚔️', isAI: true, accessory: 'mahkota', motif: 'kawung' }
+      ];
+      this.setupPlayers(configs);
+      this.showToast('👑 GRAND FINAL PIALA RAJA: Hadapi Sang Patih Gajah Mada!');
+      this.addHistoryLog('👑 <strong>PARTAI PUNCAK GRAND FINAL PIALA RAJA DIMULAI!</strong>');
+    }
+  }
+
+  renderTournamentBracket(stateKey = 'normal') {
+    const container = document.getElementById('bracket-tree-container');
+    const statusBox = document.getElementById('bracket-status-box');
+    const actionBtn = document.getElementById('btn-bracket-action');
+    const subtitle = document.getElementById('bracket-subtitle');
+    if (!container) return;
+
+    const b = this.tournamentBracket;
+    const isSF1Active = b.sf1.status === 'active';
+    const isFinalActive = b.final.status === 'active';
+    const isFinalDone = b.final.status === 'champion';
+
+    subtitle.innerText = isFinalDone ? '🏆 Pemenang Piala Raja Dinobatkan!' : (b.final.status === 'ready' || isFinalActive ? '👑 Partai Puncak Grand Final' : '⚔️ Babak Semifinal Knockout');
+
+    container.innerHTML = `
+      <div class="bracket-column">
+        <div class="bracket-col-title">Semifinal A</div>
+        <div class="bracket-match ${isSF1Active ? 'current-active' : ''}">
+          <div class="bracket-slot ${b.sf1.winner === b.sf1.p1 ? 'winner' : (b.sf1.winner ? 'loser' : '')}">
+            <span>👤 ${b.sf1.p1}</span>
+            <span class="bracket-slot-tag ${b.sf1.winner === b.sf1.p1 ? 'tag-winner' : (isSF1Active ? 'tag-active' : '')}">
+              ${b.sf1.winner === b.sf1.p1 ? '✓ MENANG' : (isSF1Active ? 'BERTANDING' : '')}
+            </span>
+          </div>
+          <div class="bracket-slot ${b.sf1.winner === b.sf1.p2 ? 'winner' : (b.sf1.winner ? 'loser' : '')}">
+            <span>🐅 ${b.sf1.p2}</span>
+            <span class="bracket-slot-tag ${b.sf1.winner === b.sf1.p2 ? 'tag-winner' : ''}">
+              ${b.sf1.winner === b.sf1.p2 ? '✓ MENANG' : (b.sf1.winner ? 'GUGUR' : '')}
+            </span>
+          </div>
+        </div>
+
+        <div class="bracket-col-title" style="margin-top: 10px;">Semifinal B</div>
+        <div class="bracket-match">
+          <div class="bracket-slot ${b.sf2.winner === b.sf2.p1 ? 'winner' : (b.sf2.winner ? 'loser' : '')}">
+            <span>⚔️ ${b.sf2.p1}</span>
+            <span class="bracket-slot-tag ${b.sf2.winner === b.sf2.p1 ? 'tag-winner' : ''}">
+              ${b.sf2.winner === b.sf2.p1 ? '✓ MENANG' : ''}
+            </span>
+          </div>
+          <div class="bracket-slot ${b.sf2.winner === b.sf2.p2 ? 'winner' : (b.sf2.winner ? 'loser' : '')}">
+            <span>🌺 ${b.sf2.p2}</span>
+            <span class="bracket-slot-tag ${b.sf2.winner === b.sf2.p2 ? 'tag-winner' : ''}">
+              ${b.sf2.winner === b.sf2.p2 ? '✓ MENANG' : (b.sf2.winner ? 'GUGUR' : '')}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div class="bracket-connector-col">➔</div>
+
+      <div class="bracket-column">
+        <div class="bracket-col-title">Grand Final 👑</div>
+        <div class="bracket-match ${isFinalActive ? 'current-active' : ''}">
+          <div class="bracket-slot ${b.final.winner === b.final.p1 ? 'winner' : (b.final.winner ? 'loser' : '')}">
+            <span>${b.final.p1 === this.tournamentPlayer.name ? '👑' : '⚔️'} ${b.final.p1}</span>
+            <span class="bracket-slot-tag ${b.final.winner === b.final.p1 ? 'tag-winner' : (isFinalActive ? 'tag-active' : '')}">
+              ${b.final.winner === b.final.p1 ? '🏆 JUARA 1' : (isFinalActive ? 'BERTANDING' : '')}
+            </span>
+          </div>
+          <div class="bracket-slot ${b.final.winner === b.final.p2 ? 'winner' : (b.final.winner ? 'loser' : '')}">
+            <span>⚔️ ${b.final.p2}</span>
+            <span class="bracket-slot-tag ${b.final.winner === b.final.p2 ? 'tag-winner' : ''}">
+              ${b.final.winner === b.final.p2 ? '🏆 JUARA 1' : (b.final.winner ? 'RUNNER-UP' : '')}
+            </span>
+          </div>
+        </div>
+
+        <div class="bracket-trophy-display">
+          <div style="font-size: 2.2rem; filter: drop-shadow(0 0 10px rgba(245,158,11,0.6));">🏆</div>
+          <span style="font-size: 0.75rem; font-weight: 800; color: #fbbf24;">PIALA RAJA NUSANTARA</span>
+        </div>
+      </div>
+    `;
+
+    if (stateKey === 'sf_win') {
+      statusBox.innerHTML = `
+        <span style="color: #34d399; font-weight: 700;">🎉 Luar Biasa! Anda memenangkan Semifinal 1!</span><br>
+        <span style="color: #cbd5e1; font-size: 0.8rem;">Di Semifinal 2: <strong>Gajah Mada ⚔️</strong> berhasil menundukkan I Gusti Ngurah 🌺!</span>
+      `;
+      actionBtn.innerText = 'Lanjut ke Grand Final ⚔️';
+      actionBtn.onclick = () => this.startTournamentMatch('final');
+    } else if (stateKey === 'sf_lost') {
+      statusBox.innerHTML = `
+        <span style="color: #f87171; font-weight: 700;">💔 Anda gugur di Babak Semifinal.</span><br>
+        <span style="color: #cbd5e1; font-size: 0.8rem;">Tuanku Imam 🐅 melaju ke babak puncak perebutan piala.</span>
+      `;
+      actionBtn.innerText = 'Ulangi Turnamen 🔄';
+      actionBtn.onclick = () => this.initTournament(this.tournamentPlayer.name, this.tournamentPlayer.accessory, this.tournamentPlayer.motif);
+    } else if (stateKey === 'final_win') {
+      statusBox.innerHTML = `
+        <span style="color: #fbbf24; font-weight: 800; font-size: 1rem;">👑 SELAMAT! ANDA JUARA PIALA RAJA NUSANTARA! 🏆</span><br>
+        <span style="color: #34d399; font-size: 0.82rem;">Mengalahkan Gajah Mada di partai puncak dan dinobatkan sebagai Maharaja Nusantara!</span>
+      `;
+      actionBtn.innerText = 'Main Turnamen Baru 🏆';
+      actionBtn.onclick = () => {
+        document.getElementById('modal-tournament-bracket').classList.remove('open');
+        document.getElementById('modal-setup').classList.add('open');
+      };
+    } else if (stateKey === 'final_lost') {
+      statusBox.innerHTML = `
+        <span style="color: #fbbf24; font-weight: 700;">🥈 Anda meraih posisi Runner-Up (Juara 2).</span><br>
+        <span style="color: #cbd5e1; font-size: 0.8rem;">Gajah Mada ⚔️ berhasil mempertahankan supremasi takhta Majapahit.</span>
+      `;
+      actionBtn.innerText = 'Tantang Lagi 🔄';
+      actionBtn.onclick = () => this.initTournament(this.tournamentPlayer.name, this.tournamentPlayer.accessory, this.tournamentPlayer.motif);
+    }
+  }
+
+  showTournamentBracketModal(stateKey) {
+    this.renderTournamentBracket(stateKey);
+    const bracketModal = document.getElementById('modal-tournament-bracket');
+    if (bracketModal) bracketModal.classList.add('open');
   }
 
   renderPlayerForm(count) {
