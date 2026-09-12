@@ -74,6 +74,6 @@
 - [x] Perbaikan circular JSON serialization pada multiplayer room server
 
 ## Fase 12: Rencana Fitur Masa Depan (v2.2.0+)
-- [ ] Voice Synthesizer / Sound Banter Pemain Multi-Dialek
-- [ ] Mode Malam Sakral Berpendar (Glow-in-the-dark Neon Nusantara)
-- [ ] Mini-Games Tantangan Catur Jawa di Petak Khusus
+- [x] Voice Synthesizer / Sound Banter Pemain Multi-Dialek
+- [x] Mode Malam Sakral Berpendar (Glow-in-the-dark Neon Nusantara)
+- [x] Mini-Games Tantangan Catur Jawa di Petak Khusus

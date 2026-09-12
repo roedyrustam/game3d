@@ -2120,8 +2120,132 @@ class SnakeAndLadderGame {
         this.hasExtraRoll = true;
       }
     }
+    
+    if (player.tile === 45) {
+      await this.handleMinigame(player);
+    }
 
     this.updatePawnPositions(false);
+  }
+
+  async handleMinigame(player) {
+    return new Promise((resolve) => {
+      if (player.isAI) {
+        // AI skips the minigame or automatically fails/wins randomly
+        this.showToast(`🤖 ${player.name} mendarat di petak Catur Jawa, tapi dia bot (Skip)`);
+        resolve();
+        return;
+      }
+      
+      this.showToast(`♟️ ${player.name} ditantang bermain Catur Jawa!`);
+      this.triggerPawnEmote(player, 'Catur Jawa! ♟️', '#2563eb');
+      
+      const overlay = document.getElementById('minigame-overlay');
+      const boardUI = document.getElementById('tic-tac-toe-board');
+      const statusUI = document.getElementById('minigame-status');
+      const btnSurrender = document.getElementById('btn-minigame-surrender');
+      
+      overlay.style.display = 'block';
+      overlay.classList.remove('hidden');
+      
+      // Basic Tic-Tac-Toe state
+      let board = ['', '', '', '', '', '', '', '', ''];
+      let isPlayerTurn = true;
+      let gameOver = false;
+      
+      const checkWinner = (b) => {
+        const lines = [
+          [0, 1, 2], [3, 4, 5], [6, 7, 8],
+          [0, 3, 6], [1, 4, 7], [2, 5, 8],
+          [0, 4, 8], [2, 4, 6]
+        ];
+        for (let line of lines) {
+          if (b[line[0]] && b[line[0]] === b[line[1]] && b[line[0]] === b[line[2]]) {
+            return b[line[0]];
+          }
+        }
+        if (!b.includes('')) return 'Draw';
+        return null;
+      };
+
+      const finishGame = async (result) => {
+        gameOver = true;
+        btnSurrender.onclick = null;
+        setTimeout(async () => {
+          overlay.classList.add('hidden');
+          setTimeout(() => { overlay.style.display = 'none'; }, 300);
+          
+          if (result === 'X') {
+            this.showToast(`🎉 Menang Catur Jawa! Maju 3 langkah.`);
+            this.triggerPawnEmote(player, 'Menang! 🎉', '#10b981');
+            audio.playMysterySound();
+            const targetTile = Math.min(100, player.tile + 3);
+            for (let t = player.tile + 1; t <= targetTile; t++) {
+              await this.hopPawnToTile(player, t);
+              player.tile = t;
+              this.updateHUD();
+            }
+          } else if (result === 'O' || result === 'Surrender') {
+            this.showToast(`💀 Kalah Catur Jawa! Mundur 3 langkah.`);
+            this.triggerPawnEmote(player, 'Kalah! 💀', '#ef4444');
+            audio.playZonkSound();
+            const targetTile = Math.max(1, player.tile - 3);
+            for (let t = player.tile - 1; t >= targetTile; t--) {
+              await this.hopPawnToTile(player, t);
+              player.tile = t;
+              this.updateHUD();
+            }
+          } else {
+            this.showToast(`🤝 Seri! Tidak ada penalti.`);
+          }
+          resolve();
+        }, 1500);
+      };
+
+      const aiMove = () => {
+        if (gameOver) return;
+        statusUI.innerText = "Giliran Bot (O)...";
+        setTimeout(() => {
+          // simple random AI
+          const emptyIndices = board.map((val, idx) => val === '' ? idx : -1).filter(idx => idx !== -1);
+          if (emptyIndices.length > 0) {
+            const move = emptyIndices[Math.floor(Math.random() * emptyIndices.length)];
+            board[move] = 'O';
+            renderBoard();
+            const winner = checkWinner(board);
+            if (winner) finishGame(winner);
+            else {
+              isPlayerTurn = true;
+              statusUI.innerText = "Giliranmu (X)";
+            }
+          }
+        }, 800);
+      };
+
+      const renderBoard = () => {
+        boardUI.innerHTML = '';
+        board.forEach((val, idx) => {
+          const cell = document.createElement('div');
+          cell.className = `ttt-cell ${val ? val.toLowerCase() : ''}`;
+          cell.innerText = val;
+          cell.onclick = () => {
+            if (!isPlayerTurn || gameOver || val !== '') return;
+            board[idx] = 'X';
+            audio.playPop(400, 0.1);
+            isPlayerTurn = false;
+            renderBoard();
+            const winner = checkWinner(board);
+            if (winner) finishGame(winner);
+            else aiMove();
+          };
+          boardUI.appendChild(cell);
+        });
+      };
+      
+      btnSurrender.onclick = () => finishGame('Surrender');
+      renderBoard();
+      statusUI.innerText = "Giliranmu (X)";
+    });
   }
 
   smoothTravel(mesh, startPos, endPos, duration, archHeight = 1.0) {
